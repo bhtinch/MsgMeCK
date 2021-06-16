@@ -30,7 +30,6 @@ class Conversation {
 }   //  End of Class
 
 extension Conversation {
-    
     convenience init?(ckRecord: CKRecord) {
         guard let conversationID = ckRecord[ConversationStrings.conversationID] as? String,
               let messageCount = ckRecord[ConversationStrings.messageCount] as? Int,
@@ -41,7 +40,6 @@ extension Conversation {
 }   //  End of Extension
 
 extension CKRecord {
-    
     convenience init(convesation: Conversation) {
         self.init(recordType: ConversationStrings.recordType, recordID: convesation.ckRecordID)
         

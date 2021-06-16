@@ -7,6 +7,7 @@
 
 import Foundation
 import CloudKit
+import MessageKit
 
 struct UserStrings {
     static let name = "name"
@@ -18,6 +19,10 @@ class User {
     let name: String
     let conversations: [Conversation]
     let ckRecordID: CKRecord.ID
+    
+    var sender: SenderType {
+        return Sender(senderId: ckRecordID.description, displayName: name)
+    }
     
     init(name: String = "User1", conversations: [Conversation], ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
         self.name = name
@@ -54,3 +59,9 @@ extension User: Equatable {
         lhs.ckRecordID == rhs.ckRecordID
     }
 }   //  End of Extension
+
+
+struct Sender: SenderType {
+    var senderId: String
+    var displayName: String
+}   //  End of Struct

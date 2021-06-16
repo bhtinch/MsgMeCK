@@ -17,16 +17,15 @@ struct MessageStrings {
     static let recordType = "Message"
 }
 
-class Message {
-    
-    let messageID: String
+class Message: MessageType {
+    let messageId: String
     let sentDate: Date
     let user: User
     let ckRecordID: CKRecord.ID
     let messageText: String
     
     var sender: SenderType {
-        return Sender(senderId: user.ckRecordID.description, displayName: user.name)
+        return user.sender
     }
     
     var kind: MessageKind {
@@ -34,17 +33,15 @@ class Message {
     }
     
     init(messageID: String, sentDate: Date, user: User, messageText: String, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
-        self.messageID = messageID
+        self.messageId = messageID
         self.sentDate = sentDate
         self.user = user
         self.messageText = messageText
         self.ckRecordID = ckRecordID
     }
-    
 }   //  End of Class
 
 extension Message {
-    
     convenience init?(ckRecord: CKRecord) {
         guard let messageID = ckRecord[MessageStrings.messageID] as? String,
               let user = ckRecord[MessageStrings.user] as? User,
@@ -56,12 +53,11 @@ extension Message {
 }   //  End of Extension
 
 extension CKRecord {
-    
     convenience init(message: Message) {
         self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
         
         self.setValuesForKeys([
-            MessageStrings.messageID : message.messageID,
+            MessageStrings.messageID : message.messageId,
             MessageStrings.messageText : message.messageText,
             MessageStrings.sentDate : message.sentDate,
             MessageStrings.user : message.user
@@ -77,9 +73,6 @@ extension Message: Equatable {
 
 
 
-struct Sender: SenderType {
-    var senderId: String
-    var displayName: String
-}   //  End of Struct
+
 
 
