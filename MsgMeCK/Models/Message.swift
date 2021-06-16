@@ -6,3 +6,80 @@
 //
 
 import Foundation
+import CloudKit
+import MessageKit
+
+struct MessageStrings {
+    static let messageID = "messageID"
+    static let user = "user"
+    static let sentDate = "sentDate"
+    static let messageText = "messageText"
+    static let recordType = "Message"
+}
+
+class Message {
+    
+    let messageID: String
+    let sentDate: Date
+    let user: User
+    let ckRecordID: CKRecord.ID
+    let messageText: String
+    
+    var sender: SenderType {
+        return Sender(senderId: user.ckRecordID.description, displayName: user.name)
+    }
+    
+    var kind: MessageKind {
+        return .text(messageText)
+    }
+    
+    init(messageID: String, sentDate: Date, user: User, messageText: String, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+        self.messageID = messageID
+        self.sentDate = sentDate
+        self.user = user
+        self.messageText = messageText
+        self.ckRecordID = ckRecordID
+    }
+    
+}   //  End of Class
+
+extension Message {
+    
+    convenience init?(ckRecord: CKRecord) {
+        guard let messageID = ckRecord[MessageStrings.messageID] as? String,
+              let user = ckRecord[MessageStrings.user] as? User,
+              let sentDate = ckRecord[MessageStrings.sentDate] as? Date,
+              let messageText = ckRecord[MessageStrings.messageText] as? String else { return nil }
+        
+        self.init(messageID: messageID, sentDate: sentDate, user: user, messageText: messageText, ckRecordID: ckRecord.recordID)
+    }
+}   //  End of Extension
+
+extension CKRecord {
+    
+    convenience init(message: Message) {
+        self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
+        
+        self.setValuesForKeys([
+            MessageStrings.messageID : message.messageID,
+            MessageStrings.messageText : message.messageText,
+            MessageStrings.sentDate : message.sentDate,
+            MessageStrings.user : message.user
+        ])
+    }
+}   //  End of Extension
+
+extension Message: Equatable {
+    static func == (lhs: Message, rhs: Message) -> Bool {
+        lhs.ckRecordID == rhs.ckRecordID
+    }
+}   //  End of Extension
+
+
+
+struct Sender: SenderType {
+    var senderId: String
+    var displayName: String
+}   //  End of Struct
+
+

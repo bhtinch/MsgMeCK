@@ -6,24 +6,33 @@
 //
 
 import UIKit
+import MessageKit
+import CloudKit
 
-class ConversationViewController: UIViewController {
+class ConversationViewController: MessagesViewController {
 
+    //  MARK: - LIFECYLES
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
     }
     
+    //  MARK: - METHODS
+    
+}   //  End of Class
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+//  MARK: - MESSAGES DATASOURCE AND DELEGATES
+extension ConversationViewController: MessagesDataSource, MessagesDisplayDelegate {
+    func currentSender() -> SenderType {
+        return currentSender()
     }
-    */
-
-}
+    
+    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
+        
+    }
+    
+    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
+        return 0
+    }
+}   //  End of Extension

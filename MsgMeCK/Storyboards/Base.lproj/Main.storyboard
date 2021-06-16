@@ -11,7 +11,7 @@
         <!--Conversations-->
         <scene sceneID="64C-Rw-HVh">
             <objects>
-                <tableViewController id="ekg-un-rQ8" sceneMemberID="viewController">
+                <tableViewController id="ekg-un-rQ8" customClass="ConversationsListTableViewController" customModule="MsgMeCK" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="xEE-6e-dQG">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -56,10 +56,10 @@
             </objects>
             <point key="canvasLocation" x="451" y="111"/>
         </scene>
-        <!--View Controller-->
+        <!--Conversation View Controller-->
         <scene sceneID="5Ak-uU-tLI">
             <objects>
-                <viewController id="qYz-Jd-eoB" sceneMemberID="viewController">
+                <viewController id="qYz-Jd-eoB" customClass="ConversationViewController" customModule="MsgMeCK" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5We-rf-paE">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
