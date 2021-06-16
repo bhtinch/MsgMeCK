@@ -3,13 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5713A4E17FFB2CBF4775ECD9 /* Pods_MsgMeCK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */; };
+		62922CCE267A97F700F9EB30 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CCD267A97F700F9EB30 /* Conversation.swift */; };
+		62922CD0267A97FC00F9EB30 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CCF267A97FC00F9EB30 /* Message.swift */; };
+		62922CD3267A987300F9EB30 /* ConversationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CD2267A987300F9EB30 /* ConversationError.swift */; };
+		62922CD5267A988700F9EB30 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CD4267A988700F9EB30 /* DateFormatter.swift */; };
+		62922CD7267A9A1900F9EB30 /* ConversationsListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CD6267A9A1900F9EB30 /* ConversationsListTableViewController.swift */; };
+		62922CD9267A9A3200F9EB30 /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CD8267A9A3200F9EB30 /* ConversationViewController.swift */; };
 		62AD8979266AAD79007065FB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62AD8978266AAD79007065FB /* AppDelegate.swift */; };
 		62AD897B266AAD79007065FB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62AD897A266AAD79007065FB /* SceneDelegate.swift */; };
-		62AD897D266AAD79007065FB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62AD897C266AAD79007065FB /* ViewController.swift */; };
 		62AD8980266AAD79007065FB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 62AD897E266AAD79007065FB /* Main.storyboard */; };
 		62AD8982266AAD7A007065FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 62AD8981266AAD7A007065FB /* Assets.xcassets */; };
 		62AD8985266AAD7A007065FB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 62AD8983266AAD7A007065FB /* LaunchScreen.storyboard */; };
@@ -17,16 +23,24 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MsgMeCK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		62922CCD267A97F700F9EB30 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
+		62922CCF267A97FC00F9EB30 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		62922CD2267A987300F9EB30 /* ConversationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationError.swift; sourceTree = "<group>"; };
+		62922CD4267A988700F9EB30 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
+		62922CD6267A9A1900F9EB30 /* ConversationsListTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationsListTableViewController.swift; sourceTree = "<group>"; };
+		62922CD8267A9A3200F9EB30 /* ConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewController.swift; sourceTree = "<group>"; };
 		62AD8975266AAD79007065FB /* MsgMeCK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MsgMeCK.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62AD8978266AAD79007065FB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		62AD897A266AAD79007065FB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		62AD897C266AAD79007065FB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		62AD897F266AAD79007065FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		62AD8981266AAD7A007065FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		62AD8984266AAD7A007065FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		62AD8986266AAD7A007065FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		62AD898D266AAEF4007065FB /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		62AD898F266AAF69007065FB /* MsgMeCK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MsgMeCK.entitlements; sourceTree = "<group>"; };
+		66FD2D68C6FBF9323600A844 /* Pods-MsgMeCK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MsgMeCK.debug.xcconfig"; path = "Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK.debug.xcconfig"; sourceTree = "<group>"; };
+		EAAA0A405C2E688A3328C6D1 /* Pods-MsgMeCK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MsgMeCK.release.xcconfig"; path = "Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,18 +49,82 @@
 			buildActionMask = 2147483647;
 			files = (
 				62AD898E266AAEF4007065FB /* CloudKit.framework in Frameworks */,
+				5713A4E17FFB2CBF4775ECD9 /* Pods_MsgMeCK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		407E170FB56E8802CD54E8B7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				66FD2D68C6FBF9323600A844 /* Pods-MsgMeCK.debug.xcconfig */,
+				EAAA0A405C2E688A3328C6D1 /* Pods-MsgMeCK.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		62922CC8267A960400F9EB30 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				62AD8978266AAD79007065FB /* AppDelegate.swift */,
+				62AD897A266AAD79007065FB /* SceneDelegate.swift */,
+				62AD8981266AAD7A007065FB /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		62922CC9267A961400F9EB30 /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				62922CD6267A9A1900F9EB30 /* ConversationsListTableViewController.swift */,
+				62922CD8267A9A3200F9EB30 /* ConversationViewController.swift */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		62922CCA267A961C00F9EB30 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				62AD897E266AAD79007065FB /* Main.storyboard */,
+				62AD8983266AAD7A007065FB /* LaunchScreen.storyboard */,
+			);
+			path = Storyboards;
+			sourceTree = "<group>";
+		};
+		62922CCB267A962200F9EB30 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				62922CCD267A97F700F9EB30 /* Conversation.swift */,
+				62922CCF267A97FC00F9EB30 /* Message.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		62922CCC267A962500F9EB30 /* Model Controllers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "Model Controllers";
+			sourceTree = "<group>";
+		};
+		62922CD1267A985F00F9EB30 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				62922CD2267A987300F9EB30 /* ConversationError.swift */,
+				62922CD4267A988700F9EB30 /* DateFormatter.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		62AD896C266AAD79007065FB = {
 			isa = PBXGroup;
 			children = (
 				62AD8977266AAD79007065FB /* MsgMeCK */,
 				62AD8976266AAD79007065FB /* Products */,
 				62AD898C266AAEF4007065FB /* Frameworks */,
+				407E170FB56E8802CD54E8B7 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,13 +140,13 @@
 			isa = PBXGroup;
 			children = (
 				62AD898F266AAF69007065FB /* MsgMeCK.entitlements */,
-				62AD8978266AAD79007065FB /* AppDelegate.swift */,
-				62AD897A266AAD79007065FB /* SceneDelegate.swift */,
-				62AD897C266AAD79007065FB /* ViewController.swift */,
-				62AD897E266AAD79007065FB /* Main.storyboard */,
-				62AD8981266AAD7A007065FB /* Assets.xcassets */,
-				62AD8983266AAD7A007065FB /* LaunchScreen.storyboard */,
 				62AD8986266AAD7A007065FB /* Info.plist */,
+				62922CD1267A985F00F9EB30 /* Helpers */,
+				62922CCB267A962200F9EB30 /* Models */,
+				62922CCC267A962500F9EB30 /* Model Controllers */,
+				62922CC9267A961400F9EB30 /* View Controllers */,
+				62922CCA267A961C00F9EB30 /* Storyboards */,
+				62922CC8267A960400F9EB30 /* Resources */,
 			);
 			path = MsgMeCK;
 			sourceTree = "<group>";
@@ -77,6 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				62AD898D266AAEF4007065FB /* CloudKit.framework */,
+				5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -88,9 +167,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 62AD8989266AAD7A007065FB /* Build configuration list for PBXNativeTarget "MsgMeCK" */;
 			buildPhases = (
+				38448B6656679F464DFB3B92 /* [CP] Check Pods Manifest.lock */,
 				62AD8971266AAD79007065FB /* Sources */,
 				62AD8972266AAD79007065FB /* Frameworks */,
 				62AD8973266AAD79007065FB /* Resources */,
+				78F3F61BAE42647905BB52B0 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -146,13 +227,60 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		38448B6656679F464DFB3B92 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MsgMeCK-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		78F3F61BAE42647905BB52B0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		62AD8971266AAD79007065FB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62AD897D266AAD79007065FB /* ViewController.swift in Sources */,
+				62922CCE267A97F700F9EB30 /* Conversation.swift in Sources */,
+				62922CD3267A987300F9EB30 /* ConversationError.swift in Sources */,
+				62922CD9267A9A3200F9EB30 /* ConversationViewController.swift in Sources */,
+				62922CD5267A988700F9EB30 /* DateFormatter.swift in Sources */,
+				62922CD0267A97FC00F9EB30 /* Message.swift in Sources */,
 				62AD8979266AAD79007065FB /* AppDelegate.swift in Sources */,
+				62922CD7267A9A1900F9EB30 /* ConversationsListTableViewController.swift in Sources */,
 				62AD897B266AAD79007065FB /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -297,6 +425,7 @@
 		};
 		62AD898A266AAD7A007065FB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 66FD2D68C6FBF9323600A844 /* Pods-MsgMeCK.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -317,6 +446,7 @@
 		};
 		62AD898B266AAD7A007065FB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EAAA0A405C2E688A3328C6D1 /* Pods-MsgMeCK.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
