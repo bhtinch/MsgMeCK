@@ -11,22 +11,22 @@ import MessageKit
 
 struct UserStrings {
     static let name = "name"
-    static let conversations = "conversations"
+    static let conversationIDs = "conversations"
     static let recordType = "User"
 }
 
 class User {
     let name: String
-    let conversations: [Conversation]
+    let conversationIDs: [String]
     let ckRecordID: CKRecord.ID
     
     var sender: SenderType {
-        return Sender(senderId: ckRecordID.description, displayName: name)
+        return Sender(senderId: ckRecordID.recordName, displayName: name)
     }
     
-    init(name: String = "User1", conversations: [Conversation], ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+    init(name: String = "User1", conversationIDs: [String], ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
         self.name = name
-        self.conversations = conversations
+        self.conversationIDs = conversationIDs
         self.ckRecordID = ckRecordID
     }
 }   //  End of Class
@@ -35,9 +35,9 @@ extension User {
     
     convenience init?(ckRecord: CKRecord) {
         guard let name = ckRecord[UserStrings.name] as? String,
-              let conversations = ckRecord[UserStrings.conversations] as? [Conversation] else { return nil }
+              let conversationIDs = ckRecord[UserStrings.conversationIDs] as? [String] else { return nil }
         
-        self.init(name: name, conversations: conversations, ckRecordID: ckRecord.recordID)
+        self.init(name: name, conversationIDs: conversationIDs, ckRecordID: ckRecord.recordID)
     }
     
 }    //  End of Extension
@@ -48,7 +48,7 @@ extension CKRecord {
         self.init(recordType: UserStrings.recordType, recordID: user.ckRecordID)
         self.setValuesForKeys([
             UserStrings.name : user.name,
-            UserStrings.conversations : user.conversations
+            UserStrings.conversationIDs : user.conversationIDs
         ])
     }
     
