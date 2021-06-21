@@ -39,9 +39,9 @@ class Message: MessageType {
         self.messageText = messageText
         self.ckRecordID = ckRecordID
     }
-}   //  End of Class
-
-extension Message {
+    
+    
+    //  convenience from ckRecord
     convenience init?(ckRecord: CKRecord) {
         guard let messageID = ckRecord[MessageStrings.messageID] as? String,
               let user = ckRecord[MessageStrings.user] as? User,
@@ -50,9 +50,18 @@ extension Message {
         
         self.init(messageID: messageID, sentDate: sentDate, user: user, messageText: messageText, ckRecordID: ckRecord.recordID)
     }
+}   //  End of Class
+
+extension Message: Equatable {
+    static func == (lhs: Message, rhs: Message) -> Bool {
+        lhs.ckRecordID == rhs.ckRecordID
+    }
 }   //  End of Extension
 
+
+//  MARK: - CKRECORD
 extension CKRecord {
+    //  convenience from Message
     convenience init(message: Message) {
         self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
         
@@ -65,11 +74,7 @@ extension CKRecord {
     }
 }   //  End of Extension
 
-extension Message: Equatable {
-    static func == (lhs: Message, rhs: Message) -> Bool {
-        lhs.ckRecordID == rhs.ckRecordID
-    }
-}   //  End of Extension
+
 
 
 

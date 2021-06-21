@@ -50,7 +50,13 @@
                             <outlet property="delegate" destination="ekg-un-rQ8" id="8pf-fe-aK3"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Conversations" id="ko5-2Y-6B9"/>
+                    <navigationItem key="navigationItem" title="Conversations" id="ko5-2Y-6B9">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Arg-Xv-0bF">
+                            <connections>
+                                <segue destination="qYz-Jd-eoB" kind="show" id="g26-xD-dje"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="O0n-5T-5DJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -89,6 +95,9 @@
             <point key="canvasLocation" x="-297" y="111"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="g26-xD-dje"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
