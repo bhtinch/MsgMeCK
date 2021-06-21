@@ -42,7 +42,7 @@ class ConversationsListTableViewController: UITableViewController {
             guard let indexPath = tableView.indexPathForSelectedRow,
                   let destination = segue.destination as? ConversationViewController else { return }
             
-            let conversationID = conversations[indexPath.row].conversationID
+            let conversationID = conversations[indexPath.row].ckRecordID.recordName
             destination.conversationID = conversationID
         }
     }

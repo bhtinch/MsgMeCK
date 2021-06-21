@@ -9,50 +9,75 @@ import Foundation
 import CloudKit
 
 struct ConversationStrings {
-    static let conversationID = "conversationID"
-    static let messageCount = "messageCount"
-    static let mostRecentMsgTimestamp = "mostRecentMsgTimestamp"
+    static let latestMessageID = "latestMessageID"
+    static let latestMessageBody = "latestMessageBody"
+    static let latestMessageTimestamp = "latestMessageTimestamp"
+    static let senderAId = "senderAId"
+    static let senderBId = "senderBId"
     static let recordType = "Conversation"
 }
 
 class Conversation {
-    let conversationID: String
-    let messageCount: Int
-    let mostRecentMsgTimestamp: Date
+    let latestMessageID: String
+    let latestMessageBody: String
+    let latestMessageTimestamp: Date
+    let senderAId: String
+    let senderBId: String
     let ckRecordID: CKRecord.ID
     
-    init(conversationID: String = UUID().uuidString, messageCount: Int, mostRecentMsgTimestamp: Date, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
-        self.conversationID = conversationID
-        self.messageCount = messageCount
+    init(latestMessageID: String, latestMessageBody: String, latestMessageTimestamp: Date, senderAId: String, senderBId: String, ckRecordID: CKRecord.ID) {
+        self.latestMessageID = latestMessageID
+        self.latestMessageBody = latestMessageBody
+        self.latestMessageTimestamp = latestMessageTimestamp
+        self.senderAId = senderAId
+        self.senderBId = senderBId
         self.ckRecordID = ckRecordID
-        self.mostRecentMsgTimestamp = mostRecentMsgTimestamp
+    }
+    
+    //  convenience from Message object
+    convenience init(latestMessage: Message, senderBId: String, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+        let latestMessageID = latestMessage.messageId
+        let latestMessageBody = latestMessage.messageText
+        let latestMessageTimestamp = latestMessage.sentDate
+        let senderAId = latestMessage.sender.senderId
+        
+        self.init(latestMessageID: latestMessageID, latestMessageBody: latestMessageBody, latestMessageTimestamp: latestMessageTimestamp, senderAId: senderAId, senderBId: senderBId, ckRecordID: ckRecordID)
+    }
+    
+    //  convenience from ckRecord object
+    convenience init?(ckRecord: CKRecord) {
+        guard let latestMessageID = ckRecord[ConversationStrings.latestMessageID] as? String,
+              let latestMessageBody = ckRecord[ConversationStrings.latestMessageBody] as? String,
+              let latestMessageTimestamp = ckRecord[ConversationStrings.latestMessageTimestamp] as? Date,
+              let senderAId = ckRecord[ConversationStrings.senderAId] as? String,
+              let senderBId = ckRecord[ConversationStrings.senderBId] as? String else { return nil }
+        
+        self.init(latestMessageID: latestMessageID, latestMessageBody: latestMessageBody, latestMessageTimestamp: latestMessageTimestamp, senderAId: senderAId, senderBId: senderBId, ckRecordID: ckRecord.recordID)
     }
 }   //  End of Class
-
-extension Conversation {
-    convenience init?(ckRecord: CKRecord) {
-        guard let conversationID = ckRecord[ConversationStrings.conversationID] as? String,
-              let messageCount = ckRecord[ConversationStrings.messageCount] as? Int,
-              let mostRecentMsgTimestamp = ckRecord[ConversationStrings.mostRecentMsgTimestamp] as? Date else { return nil }
-        
-        self.init(conversationID: conversationID, messageCount: messageCount, mostRecentMsgTimestamp: mostRecentMsgTimestamp, ckRecordID: ckRecord.recordID)
-    }
-}   //  End of Extension
-
-extension CKRecord {
-    convenience init(convesation: Conversation) {
-        self.init(recordType: ConversationStrings.recordType, recordID: convesation.ckRecordID)
-        
-        self.setValuesForKeys([
-            ConversationStrings.conversationID : convesation.conversationID,
-            ConversationStrings.messageCount : convesation.messageCount,
-            ConversationStrings.mostRecentMsgTimestamp : convesation.mostRecentMsgTimestamp
-        ])
-    }
-}
 
 extension Conversation: Equatable {
     static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         lhs.ckRecordID == rhs.ckRecordID
     }
-}
+}   //  End of Extension
+
+
+//  MARK: - CKRECORD
+
+extension CKRecord {
+    //  convenience from Conversation object
+    convenience init(convesation: Conversation) {
+        self.init(recordType: ConversationStrings.recordType, recordID: convesation.ckRecordID)
+        
+        self.setValuesForKeys([
+            ConversationStrings.latestMessageID : convesation.latestMessageID,
+            ConversationStrings.latestMessageBody : convesation.latestMessageBody,
+            ConversationStrings.latestMessageTimestamp : convesation.latestMessageTimestamp,
+            ConversationStrings.senderAId : convesation.senderAId,
+            ConversationStrings.senderBId : convesation.senderBId
+        ])
+    }
+}   //  End of Extension
+
+
