@@ -11,7 +11,7 @@ import MessageKit
 
 struct MessageStrings {
     static let messageID = "messageID"
-    static let user = "user"
+    static let userReference = "userReference"
     static let sentDate = "sentDate"
     static let messageText = "messageText"
     static let recordType = "Message"
@@ -44,9 +44,11 @@ class Message: MessageType {
     //  convenience from ckRecord
     convenience init?(ckRecord: CKRecord) {
         guard let messageID = ckRecord[MessageStrings.messageID] as? String,
-              let user = ckRecord[MessageStrings.user] as? User,
+              let userRef = ckRecord[MessageStrings.userReference] as? CKRecord.Reference,
               let sentDate = ckRecord[MessageStrings.sentDate] as? Date,
               let messageText = ckRecord[MessageStrings.messageText] as? String else { return nil }
+        
+        guard let user = UserController.fetchUserWith(userRef: userRef) else { return nil }
         
         self.init(messageID: messageID, sentDate: sentDate, user: user, messageText: messageText, ckRecordID: ckRecord.recordID)
     }
@@ -63,13 +65,17 @@ extension Message: Equatable {
 extension CKRecord {
     //  convenience from Message
     convenience init(message: Message) {
+        
         self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
+        
+        // reference to the user RECORD in CK
+        let userRef = CKRecord.Reference(recordID: message.ckRecordID, action: .none)
         
         self.setValuesForKeys([
             MessageStrings.messageID : message.messageId,
             MessageStrings.messageText : message.messageText,
             MessageStrings.sentDate : message.sentDate,
-            MessageStrings.user : message.user
+            MessageStrings.userReference : userRef
         ])
     }
 }   //  End of Extension
