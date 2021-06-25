@@ -21,10 +21,6 @@ class Sender: SenderType {
     let ckRecordID: CKRecord.ID
     let appleID: CKRecord.ID
     
-    var userRef: CKRecord.Reference {
-        return CKRecord.Reference(recordID: ckRecordID, action: .none)
-    }
-    
     var senderId: String {
         return ckRecordID.recordName
     }
@@ -51,7 +47,6 @@ extension CKRecord {
         
         self.setValuesForKeys([
             SenderStrings.displayName : sender.displayName,
-            SenderStrings.userRef : sender.userRef,
             SenderStrings.appleID : sender.appleID.recordName
         ])
     }

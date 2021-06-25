@@ -15,7 +15,6 @@ class ConversationsListTableViewController: UITableViewController {
     
     //  MARK: - PROPERTIES
     var conversations: [Conversation] = []
-    var senderRef: CKRecord.Reference?
 
     //  MARK: - LIFECYCLES
     override func viewDidLoad() {
@@ -50,8 +49,8 @@ class ConversationsListTableViewController: UITableViewController {
                 
                 if let sender = sender {
                     //  sender record exists and fetched
+                    print("sender successfully fetched with id: \(sender.ckRecordID.recordName)")
                     let senderRef = CKRecord.Reference(recordID: sender.ckRecordID, action: .none)
-                    self.senderRef = senderRef
                     self.addBarButton.isEnabled = true
                     self.fetchConversationsWith(senderRef: senderRef)
                     
@@ -91,6 +90,7 @@ class ConversationsListTableViewController: UITableViewController {
             DispatchQueue.main.async {
                 if let selfSender = sender {
                     CKController.selfSender = selfSender
+                    print("sender successfully created with id: \(selfSender.ckRecordID.recordName)")
                     self.addBarButton.isEnabled = true
                 } else {
                     Alerts.presentAlertWith(title: "Whoops!", message: "There was an error creating your account.  Please close the app and try again.", sender: self)

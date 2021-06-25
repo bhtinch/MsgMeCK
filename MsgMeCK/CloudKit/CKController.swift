@@ -36,7 +36,7 @@ struct CKController {
     }
     
     static func fetchSenderWith(userRef: CKRecord.Reference, completion: @escaping(Sender?) -> Void) {
-        let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef)
+        let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
         
         let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
         
