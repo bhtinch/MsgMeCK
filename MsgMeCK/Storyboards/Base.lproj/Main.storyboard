@@ -53,14 +53,59 @@
                     <navigationItem key="navigationItem" title="Conversations" id="ko5-2Y-6B9">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="Arg-Xv-0bF">
                             <connections>
-                                <segue destination="qYz-Jd-eoB" kind="show" id="g26-xD-dje"/>
+                                <action selector="newConvoButtonTapped:" destination="ekg-un-rQ8" id="2U5-lO-9CF"/>
+                                <segue destination="5zL-Py-Zv4" kind="show" identifier="toFindUserVC" id="mY4-nL-TiT"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="addBarButton" destination="Arg-Xv-0bF" id="36Z-Ik-RLj"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="O0n-5T-5DJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="451" y="111"/>
+        </scene>
+        <!--Select a User-->
+        <scene sceneID="aeA-tb-3fg">
+            <objects>
+                <tableViewController id="5zL-Py-Zv4" customClass="FindUserTableViewController" customModule="MsgMeCK" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="sAj-MH-w9w">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="cell" textLabel="d8x-uE-8fm" style="IBUITableViewCellStyleDefault" id="Ot4-ao-bbY">
+                                <rect key="frame" x="0.0" y="24.5" width="414" height="43.5"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ot4-ao-bbY" id="TmL-iw-5Nv">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="d8x-uE-8fm">
+                                            <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="0.0"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <segue destination="qYz-Jd-eoB" kind="show" identifier="toNewConvoVC" id="cAf-2i-r94"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="5zL-Py-Zv4" id="sEd-Lj-UAr"/>
+                            <outlet property="delegate" destination="5zL-Py-Zv4" id="XJf-jX-RfJ"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Select a User" id="xwe-1X-kax"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IK2-o1-McN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1175" y="110"/>
         </scene>
         <!--Conversation View Controller-->
         <scene sceneID="5Ak-uU-tLI">
@@ -76,7 +121,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JuS-yN-q49" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1197" y="110"/>
+            <point key="canvasLocation" x="1904" y="111"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="YkU-0o-8np">
@@ -96,7 +141,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="g26-xD-dje"/>
+        <segue reference="pzX-Gu-Piy"/>
     </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">

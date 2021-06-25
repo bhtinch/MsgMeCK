@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		5713A4E17FFB2CBF4775ECD9 /* Pods_MsgMeCK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */; };
+		6212E93D2684CB5B00DDCE31 /* Sender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6212E93C2684CB5B00DDCE31 /* Sender.swift */; };
+		6212E9412684E2D700DDCE31 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6212E9402684E2D700DDCE31 /* Alerts.swift */; };
+		6212E9432684E83D00DDCE31 /* CKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6212E9422684E83D00DDCE31 /* CKError.swift */; };
+		622D1E2B2683F4500018476D /* FindUserTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622D1E2A2683F4500018476D /* FindUserTableViewController.swift */; };
 		62922CCE267A97F700F9EB30 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CCD267A97F700F9EB30 /* Conversation.swift */; };
 		62922CD0267A97FC00F9EB30 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CCF267A97FC00F9EB30 /* Message.swift */; };
 		62922CD3267A987300F9EB30 /* ConversationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62922CD2267A987300F9EB30 /* ConversationError.swift */; };
@@ -22,11 +26,14 @@
 		62AD8982266AAD7A007065FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 62AD8981266AAD7A007065FB /* Assets.xcassets */; };
 		62AD8985266AAD7A007065FB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 62AD8983266AAD7A007065FB /* LaunchScreen.storyboard */; };
 		62AD898E266AAEF4007065FB /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62AD898D266AAEF4007065FB /* CloudKit.framework */; };
-		62E0012B26829A9400567916 /* UserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E0012A26829A9400567916 /* UserController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MsgMeCK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6212E93C2684CB5B00DDCE31 /* Sender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sender.swift; sourceTree = "<group>"; };
+		6212E9402684E2D700DDCE31 /* Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alerts.swift; sourceTree = "<group>"; };
+		6212E9422684E83D00DDCE31 /* CKError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CKError.swift; sourceTree = "<group>"; };
+		622D1E2A2683F4500018476D /* FindUserTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindUserTableViewController.swift; sourceTree = "<group>"; };
 		62922CCD267A97F700F9EB30 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		62922CCF267A97FC00F9EB30 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		62922CD2267A987300F9EB30 /* ConversationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationError.swift; sourceTree = "<group>"; };
@@ -44,7 +51,6 @@
 		62AD8986266AAD7A007065FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		62AD898D266AAEF4007065FB /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		62AD898F266AAF69007065FB /* MsgMeCK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MsgMeCK.entitlements; sourceTree = "<group>"; };
-		62E0012A26829A9400567916 /* UserController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserController.swift; sourceTree = "<group>"; };
 		66FD2D68C6FBF9323600A844 /* Pods-MsgMeCK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MsgMeCK.debug.xcconfig"; path = "Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK.debug.xcconfig"; sourceTree = "<group>"; };
 		EAAA0A405C2E688A3328C6D1 /* Pods-MsgMeCK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MsgMeCK.release.xcconfig"; path = "Target Support Files/Pods-MsgMeCK/Pods-MsgMeCK.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -85,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				62922CD6267A9A1900F9EB30 /* ConversationsListTableViewController.swift */,
+				622D1E2A2683F4500018476D /* FindUserTableViewController.swift */,
 				62922CD8267A9A3200F9EB30 /* ConversationViewController.swift */,
 			);
 			path = "View Controllers";
@@ -103,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				62922CDA267A9DC300F9EB30 /* User.swift */,
+				6212E93C2684CB5B00DDCE31 /* Sender.swift */,
 				62922CCD267A97F700F9EB30 /* Conversation.swift */,
 				62922CCF267A97FC00F9EB30 /* Message.swift */,
 			);
@@ -122,6 +130,8 @@
 			children = (
 				62922CD2267A987300F9EB30 /* ConversationError.swift */,
 				62922CD4267A988700F9EB30 /* DateFormatter.swift */,
+				6212E9402684E2D700DDCE31 /* Alerts.swift */,
+				6212E9422684E83D00DDCE31 /* CKError.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -151,7 +161,6 @@
 				62AD8986266AAD7A007065FB /* Info.plist */,
 				62922CD1267A985F00F9EB30 /* Helpers */,
 				62922CCB267A962200F9EB30 /* Models */,
-				62E0012926829A8400567916 /* Model Controllers */,
 				62922CCC267A962500F9EB30 /* CloudKit */,
 				62922CC9267A961400F9EB30 /* View Controllers */,
 				62922CCA267A961C00F9EB30 /* Storyboards */,
@@ -167,14 +176,6 @@
 				5D29A8834ADF12EB2F45A682 /* Pods_MsgMeCK.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		62E0012926829A8400567916 /* Model Controllers */ = {
-			isa = PBXGroup;
-			children = (
-				62E0012A26829A9400567916 /* UserController.swift */,
-			);
-			path = "Model Controllers";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -292,14 +293,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				62922CCE267A97F700F9EB30 /* Conversation.swift in Sources */,
+				6212E93D2684CB5B00DDCE31 /* Sender.swift in Sources */,
 				62922CD3267A987300F9EB30 /* ConversationError.swift in Sources */,
 				62922CD9267A9A3200F9EB30 /* ConversationViewController.swift in Sources */,
-				62E0012B26829A9400567916 /* UserController.swift in Sources */,
 				62922CD5267A988700F9EB30 /* DateFormatter.swift in Sources */,
 				62922CD0267A97FC00F9EB30 /* Message.swift in Sources */,
+				6212E9432684E83D00DDCE31 /* CKError.swift in Sources */,
 				62922CDD267AB20300F9EB30 /* CKController.swift in Sources */,
 				62922CDB267A9DC300F9EB30 /* User.swift in Sources */,
+				6212E9412684E2D700DDCE31 /* Alerts.swift in Sources */,
 				62AD8979266AAD79007065FB /* AppDelegate.swift in Sources */,
+				622D1E2B2683F4500018476D /* FindUserTableViewController.swift in Sources */,
 				62922CD7267A9A1900F9EB30 /* ConversationsListTableViewController.swift in Sources */,
 				62AD897B266AAD79007065FB /* SceneDelegate.swift in Sources */,
 			);
