@@ -10,8 +10,8 @@ import CloudKit
 import MessageKit
 
 struct ConversationStrings {
-    static let selfUserRef = "selfUserRef"
-    static let otherUserRef = "otherUserRef"
+    static let selfSenderRef = "selfUserRef"
+    static let otherSenderRef = "otherUserRef"
     static let recordType = "Conversation"
 }
 
@@ -28,16 +28,20 @@ class Conversation {
     
     //  convenience from ckRecord object
     convenience init?(conversationRecord: CKRecord) {
-        guard let selfUserRef = conversationRecord[ConversationStrings.selfUserRef] as? CKRecord.Reference,
-              let otherUserRef = conversationRecord[ConversationStrings.otherUserRef] as? CKRecord.Reference else { return nil }
+        guard let selfSenderRef = conversationRecord[ConversationStrings.selfSenderRef] as? CKRecord.Reference,
+              let otherSenderRef = conversationRecord[ConversationStrings.otherSenderRef] as? CKRecord.Reference else { return nil }
         
-        let selfUserRecord = CKRecord(recordType: UserStrings.recordType, recordID: selfUserRef.recordID)
-        let otherUserRecord = CKRecord(recordType: UserStrings.recordType, recordID: otherUserRef.recordID)
+        //  NEED TO FETCH SENDERS FROM CK INSTEAD OF DOING THE BELOW...
         
-        guard let selfUser = Sender(senderRecord: selfUserRecord),
-              let otherUser = Sender(senderRecord: otherUserRecord) else { return nil }
+//        let selfSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: selfSenderRef.recordID)
+//        let otherSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: otherSenderRef.recordID)
+//
+//        guard let selfSender = Sender(senderRecord: selfSenderRecord),
+//              let otherSender = Sender(senderRecord: otherSenderRecord) else { return nil }
         
-        self.init(selfSender: selfUser, otherSender: otherUser, ckRecordID: conversationRecord.recordID)
+        CKController.fetchSenderByUserRefOrAppleID(userRef: <#T##CKRecord.Reference#>, completion: <#T##(Sender?) -> Void#>)
+        
+        self.init(selfSender: selfSender, otherSender: otherSender, ckRecordID: conversationRecord.recordID)
     }
 }   //  End of Class
 
@@ -58,8 +62,8 @@ extension CKRecord {
         let otherUserRef = CKRecord.Reference(recordID: conversation.otherSender.ckRecordID, action: .none)
         
         self.setValuesForKeys([
-            ConversationStrings.selfUserRef : selfUserRef,
-            ConversationStrings.otherUserRef : otherUserRef
+            ConversationStrings.selfSenderRef : selfUserRef,
+            ConversationStrings.otherSenderRef : otherUserRef
         ])
     }
 }   //  End of Extension

@@ -44,12 +44,13 @@ class ConversationsListTableViewController: UITableViewController {
         let userRef = CKRecord.Reference(recordID: userRecordID, action: .none)
         
         //  fetch Sender record
-        CKController.fetchSenderWith(userRef: userRef) { sender in
+        CKController.fetchSenderByUserRefOrAppleID(userRef: userRef) { sender in
             DispatchQueue.main.async {
                 
                 if let sender = sender {
                     //  sender record exists and fetched
                     print("sender successfully fetched with id: \(sender.ckRecordID.recordName)")
+                    CKController.selfSender = sender
                     let senderRef = CKRecord.Reference(recordID: sender.ckRecordID, action: .none)
                     self.addBarButton.isEnabled = true
                     self.fetchConversationsWith(senderRef: senderRef)

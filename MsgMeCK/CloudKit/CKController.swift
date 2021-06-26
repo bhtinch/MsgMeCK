@@ -35,8 +35,16 @@ struct CKController {
         }
     }
     
-    static func fetchSenderWith(userRef: CKRecord.Reference, completion: @escaping(Sender?) -> Void) {
-        let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
+    static func fetchSenderByUserRefOrAppleID(userRef: CKRecord.Reference?, appleID: String?, completion: @escaping(Sender?) -> Void) {
+        var predicate: NSPredicate?
+        
+        if let userRef = userRef {
+            predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
+        } else if let appleID = appleID {
+            predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, appleID)
+        }
+        
+        guard let predicate = predicate else { return completion(nil) }
         
         let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
         
@@ -46,7 +54,6 @@ struct CKController {
                     print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
                     return completion(nil)
                 }
-                
                 
                 guard let records = records,
                       let senderRecord = records.first,
@@ -116,7 +123,7 @@ struct CKController {
     
     static func fetchAllConversationsWith(senderRef: CKRecord.Reference, completion: @escaping(Result<[Conversation], CKError>) -> Void ) {
         
-        let predicate = NSPredicate(format: "%K == %@", ConversationStrings.selfUserRef, senderRef)
+        let predicate = NSPredicate(format: "%K == %@", ConversationStrings.selfSenderRef, senderRef)
         
         let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predicate)
         
@@ -136,8 +143,8 @@ struct CKController {
     }
     
     static func fetchConversationWith(selfSenderRef: CKRecord.Reference, otherSenderRef: CKRecord.Reference, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
-        let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfUserRef, selfSenderRef, ConversationStrings.otherUserRef, otherSenderRef)
-        let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfUserRef, otherSenderRef, ConversationStrings.otherUserRef, selfSenderRef)
+        let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfSenderRef, selfSenderRef, ConversationStrings.otherSenderRef, otherSenderRef)
+        let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfSenderRef, otherSenderRef, ConversationStrings.otherSenderRef, selfSenderRef)
 
         let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
         
@@ -182,38 +189,6 @@ struct CKController {
                 }
             }
         }
-//        else {
-//            //  create new conversation and send first message
-//            guard let otherSender = otherSender else { return completion(false) }
-//            createNewConversationWith(otherSender: otherSender) { result in
-//                DispatchQueue.main.async {
-//
-//                    switch result {
-//                    case .success(let conversation):
-//                        print("successfully created conversation with id: \(conversation.ckRecordID.recordName)")
-//                        let messageRecord = CKRecord(conversation: conversation)
-//
-//                        save(messageRecord: messageRecord) { result in
-//                            DispatchQueue.main.async {
-//
-//                                switch result {
-//                                case .success(let message):
-//                                    print("successfully saved message with id: \(message.ckRecordID.recordName)")
-//                                    completion(true)
-//
-//                                case .failure(let error):
-//                                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-//                                    completion(false)
-//                                }
-//                            }
-//                        }
-//                    case .failure(let error):
-//                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-//                        completion(false)
-//                    }
-//                }
-//            }
-//        }
     }
     
     static func save(messageRecord: CKRecord, completion: @escaping(Result<Message, CKError>) -> Void ) {
