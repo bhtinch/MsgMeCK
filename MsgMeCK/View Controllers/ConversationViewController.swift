@@ -15,15 +15,16 @@ class ConversationViewController: MessagesViewController {
     var messages: [Message] = []
     var otherSender: Sender?
     var conversationRef: CKRecord.Reference?
+    var messageText: String?
     
     //  MARK: - LIFECYLES
     override func viewDidLoad() {
         super.viewDidLoad()
         configureMessageCollectionView()
-        //configureMessageInputBar()
+        configureMessageInputBar()
         
         if conversationRef != nil {
-            fetchConversationRef()
+            fetchConversation()
         }
     }
     
@@ -66,7 +67,23 @@ class ConversationViewController: MessagesViewController {
         self.messageInputBar = messageInputBar
     }
     
-    func fetchConversationRef() {
+    func createNewConversation() {
+        guard let otherSender = otherSender else { return }
+        CKController.createNewConversationWith(otherSender: otherSender) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let converation):
+                    let conversationRef = CKRecord.Reference(recordID: converation.ckRecordID, action: .none)
+                    self.conversationRef = conversationRef
+                    self.saveMessage()
+                case .failure(let error):
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    func fetchConversation() {
         guard let otherSender = otherSender,
               let selfSender = CKController.selfSender else { return }
         
@@ -102,12 +119,27 @@ class ConversationViewController: MessagesViewController {
 extension ConversationViewController: InputBarAccessoryViewDelegate {
     
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        CKController.sendNewMessageWith(conversationRef: self.conversationRef, otherSender: self.otherSender, text: text) { succes in
+        self.messageText = text
+        if conversationRef == nil {
+            self.createNewConversation()
+            return
+        } else {
+            saveMessage()
+        }
+    }
+    
+    func saveMessage() {
+        guard let conversationRef = conversationRef,
+              let text = messageText else { return }
+        CKController.sendNewMessageWith(conversationRef: conversationRef, text: text) { result in
             DispatchQueue.main.async {
-                if succes {
+                switch result {
+                case .success(let message):
+                    self.messages.append(message)
+                    self.messagesCollectionView.reloadData()
                     self.resetInputBar()
-                } else {
-                    Alerts.presentAlertWith(title: "Whoops!", message: "Your message could not be sent.  Please try again.", sender: self)
+                case .failure(let error):
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
                 }
             }
         }

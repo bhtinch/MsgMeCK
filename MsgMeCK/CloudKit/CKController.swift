@@ -87,7 +87,7 @@ struct CKController {
             }
             
             guard var records = records else { return completion(.success([])) }
-            //records.sort { ($0[SenderStrings.displayName] as! String) < ($1[SenderStrings.displayName] as! String) }
+            records.sort { ($0[SenderStrings.displayName] as! String) < ($1[SenderStrings.displayName] as! String) }
             let senders = records.compactMap { Sender(senderRecord: $0) }
             completion(.success(senders))
         }
@@ -159,63 +159,61 @@ struct CKController {
     }
     
     //  MARK: - MESSAGE FUNCTIONS
-    static func sendNewMessageWith(conversationRef: CKRecord.Reference?, otherSender: Sender?, text: String, completion: @escaping(Bool) -> Void) {
-        guard let selfSender = CKController.selfSender else { return }
+    static func sendNewMessageWith(conversationRef: CKRecord.Reference, text: String, completion: @escaping(Result<Message, CKError>) -> Void) {
+        guard let selfSender = CKController.selfSender else { return completion(.failure(.createError)) }
         
         let senderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
         
         let message = Message(senderRef: senderRef, messageText: text)
         
         //  save message to existing conversation
-        if let conversationRef = conversationRef {
-            let messageRecord = CKRecord(message: message, conversationRef: conversationRef)
-            save(messageRecord: messageRecord) { result in
-                DispatchQueue.main.async {
+        let messageRecord = CKRecord(message: message, conversationRef: conversationRef)
+        
+        save(messageRecord: messageRecord) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let message):
+                    print("successully saved message with id: \(message.ckRecordID.recordName)")
+                    completion(.success(message))
                     
-                    switch result {
-                    case .success(let message):
-                        print("successully saved message with id: \(message.ckRecordID.recordName)")
-                        completion(true)
-                        
-                    case .failure(let error):
-                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                        completion(false)
-                    }
-                }
-            }
-            
-        } else {
-            //  create new conversation and send first message
-            guard let otherSender = otherSender else { return completion(false) }
-            createNewConversationWith(otherSender: otherSender) { result in
-                DispatchQueue.main.async {
-                    
-                    switch result {
-                    case .success(let conversation):
-                        print("successfully created conversation with id: \(conversation.ckRecordID.recordName)")
-                        let messageRecord = CKRecord(conversation: conversation)
-                        
-                        save(messageRecord: messageRecord) { result in
-                            DispatchQueue.main.async {
-                                
-                                switch result {
-                                case .success(let message):
-                                    print("successfully saved message with id: \(message.ckRecordID.recordName)")
-                                    completion(true)
-                                    
-                                case .failure(let error):
-                                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                                    completion(false)
-                                }
-                            }
-                        }
-                    case .failure(let error):
-                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                        completion(false)
-                    }
+                case .failure(let error):
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    completion(.failure(.createError))
                 }
             }
         }
+//        else {
+//            //  create new conversation and send first message
+//            guard let otherSender = otherSender else { return completion(false) }
+//            createNewConversationWith(otherSender: otherSender) { result in
+//                DispatchQueue.main.async {
+//
+//                    switch result {
+//                    case .success(let conversation):
+//                        print("successfully created conversation with id: \(conversation.ckRecordID.recordName)")
+//                        let messageRecord = CKRecord(conversation: conversation)
+//
+//                        save(messageRecord: messageRecord) { result in
+//                            DispatchQueue.main.async {
+//
+//                                switch result {
+//                                case .success(let message):
+//                                    print("successfully saved message with id: \(message.ckRecordID.recordName)")
+//                                    completion(true)
+//
+//                                case .failure(let error):
+//                                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+//                                    completion(false)
+//                                }
+//                            }
+//                        }
+//                    case .failure(let error):
+//                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+//                        completion(false)
+//                    }
+//                }
+//            }
+//        }
     }
     
     static func save(messageRecord: CKRecord, completion: @escaping(Result<Message, CKError>) -> Void ) {
