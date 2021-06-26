@@ -35,33 +35,47 @@ struct CKController {
         }
     }
     
-    static func fetchSenderByUserRefOrAppleID(userRef: CKRecord.Reference?, appleID: String?, completion: @escaping(Sender?) -> Void) {
-        var predicate: NSPredicate?
+    static func fetchSendersByUserRefOrAppleID(userRef: CKRecord.Reference?, senderRefs: [CKRecord.Reference]?, completion: @escaping([Sender]?) -> Void) {
         
         if let userRef = userRef {
-            predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
-        } else if let appleID = appleID {
-            predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, appleID)
-        }
-        
-        guard let predicate = predicate else { return completion(nil) }
-        
-        let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
-        
-        publicDB.perform(query, inZoneWith: nil) { (records, error) in
-            DispatchQueue.main.async {
+            let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
+            
+            let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
+            
+            publicDB.perform(query, inZoneWith: nil) { (records, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                        return completion(nil)
+                    }
+                    
+                    guard let records = records,
+                          let senderRecord = records.first,
+                          let sender = Sender(senderRecord: senderRecord) else { return completion(nil) }
+                    
+                    return completion([sender])
+                }
+            }
+            
+        } else if let senderRefs = senderRefs {
+            let recordIDs = senderRefs.compactMap { $0.recordID }
+            let fetchOp = CKFetchRecordsOperation(recordIDs: recordIDs)
+            fetchOp.qualityOfService = .userInitiated
+            
+            fetchOp.fetchRecordsCompletionBlock = { (records, error) in
                 if let error = error {
                     print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
                     return completion(nil)
                 }
                 
-                guard let records = records,
-                      let senderRecord = records.first,
-                      let sender = Sender(senderRecord: senderRecord) else { return completion(nil) }
-                
-                completion(sender)
+                if let records = records {
+                    let senders = records.compactMap { Sender(senderRecord: $0.value) }
+                    completion(senders)
+                }
             }
         }
+        
+        
     }
     
     static func saveNewSenderWith(appleID: CKRecord.ID, displayName: String, completion: @escaping(Sender?) -> Void) {
@@ -114,8 +128,27 @@ struct CKController {
                 return completion(.failure(.createError))
             }
             
-            guard let record = record,
-                  let conversation = Conversation(conversationRecord: record) else { return completion(.failure(.createError)) }
+            guard let record = record else { return completion(.failure(.createError)) }
+            
+//            guard let record = record,
+//                  let otherSenderRef = record[ConversationStrings.otherSenderRef] as? CKRecord.Reference,
+//                  let selfSenderRef = record[ConversationStrings.selfSenderRef] as? CKRecord.Reference else { return completion(.failure(.createError)) }
+//
+//            let senderRefs = [selfSenderRef, otherSenderRef]
+//
+//            CKController.fetchSendersByUserRefOrAppleID(userRef: nil, senderRefs: senderRefs) { senders in
+//                guard let senders = senders else { return completion(.failure(.createError)) }
+//
+//                var otherSender = MessageObjects.dummySender
+//
+//                if senders.first == selfSender {
+//                    otherSender = senders.first!
+//                } else {
+//                    otherSender = senders[1]
+//                }
+//            }
+            
+            let conversation = Conversation(selfSender: selfSender, otherSender: otherSender, ckRecordID: record.recordID)
             
             completion(.success(conversation))
         }

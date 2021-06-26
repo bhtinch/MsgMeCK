@@ -51,3 +51,9 @@ extension CKRecord {
         ])
     }
 }
+
+extension Sender: Equatable {
+    static func == (lhs: Sender, rhs: Sender) -> Bool {
+       return lhs.ckRecordID == rhs.ckRecordID
+    }
+}

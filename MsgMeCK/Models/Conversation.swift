@@ -30,16 +30,12 @@ class Conversation {
     convenience init?(conversationRecord: CKRecord) {
         guard let selfSenderRef = conversationRecord[ConversationStrings.selfSenderRef] as? CKRecord.Reference,
               let otherSenderRef = conversationRecord[ConversationStrings.otherSenderRef] as? CKRecord.Reference else { return nil }
-        
-        //  NEED TO FETCH SENDERS FROM CK INSTEAD OF DOING THE BELOW...
-        
-//        let selfSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: selfSenderRef.recordID)
-//        let otherSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: otherSenderRef.recordID)
-//
-//        guard let selfSender = Sender(senderRecord: selfSenderRecord),
-//              let otherSender = Sender(senderRecord: otherSenderRecord) else { return nil }
-        
-        CKController.fetchSenderByUserRefOrAppleID(userRef: <#T##CKRecord.Reference#>, completion: <#T##(Sender?) -> Void#>)
+                
+        let selfSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: selfSenderRef.recordID)
+        let otherSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: otherSenderRef.recordID)
+
+        guard let selfSender = Sender(senderRecord: selfSenderRecord),
+              let otherSender = Sender(senderRecord: otherSenderRecord) else { return nil }
         
         self.init(selfSender: selfSender, otherSender: otherSender, ckRecordID: conversationRecord.recordID)
     }

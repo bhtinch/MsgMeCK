@@ -10,7 +10,8 @@ import MessageKit
 import CloudKit
 import InputBarAccessoryView
 
-class ConversationViewController: MessagesViewController {
+class ConversationViewController: MessagesViewController, MessagesLayoutDelegate, MessageCellDelegate {
+    
     //  MARK: - PROPERTIES
     var messages: [Message] = []
     var otherSender: Sender?
@@ -32,10 +33,9 @@ class ConversationViewController: MessagesViewController {
     func configureMessageCollectionView() {
         
         messagesCollectionView.messagesDataSource = self
-        //messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
-        //messagesCollectionView.messageCellDelegate = self
-        //messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messageCellDelegate = self
         
         scrollsToLastItemOnKeyboardBeginsEditing = true // default false
         maintainPositionOnKeyboardFrameChanged = true // default false
