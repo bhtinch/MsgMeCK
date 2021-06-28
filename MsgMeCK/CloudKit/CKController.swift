@@ -13,12 +13,13 @@ struct CKController {
     static let privateDB = CKContainer.default().privateCloudDatabase
     static let publicDB = CKContainer.default().publicCloudDatabase
     
-    static let messages: [Message] = []
-    static let conversations: [Conversation] = []
+    static var messages: [Message] = []
+    static var conversations: [Conversation] = []
+    static var senders: [Sender] = []
     static var selfSender: Sender?
     
     //  MARK: - USER FUNCTIONS
-    static func fetchCurrentUser(completion: @escaping (CKRecord?) -> Void) {
+    static func fetchCurrentAppleUser(completion: @escaping (CKRecord?) -> Void) {
         CKContainer.default().fetchUserRecordID { recordID, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -35,10 +36,10 @@ struct CKController {
         }
     }
     
-    static func fetchSendersByUserRefOrAppleID(userRef: CKRecord.Reference?, senderRefs: [CKRecord.Reference]?, completion: @escaping([Sender]?) -> Void) {
+    static func fetchSendersByRecordIdOrAppleId(appleID: CKRecord.ID?, recordIDs: [CKRecord.ID]?, completion: @escaping([Sender]?) -> Void) {
         
-        if let userRef = userRef {
-            let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, userRef.recordID.recordName)
+        if let appleID = appleID {
+            let predicate = NSPredicate(format: "%K == %@", SenderStrings.appleID, appleID)
             
             let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
             
@@ -57,25 +58,24 @@ struct CKController {
                 }
             }
             
-        } else if let senderRefs = senderRefs {
-            let recordIDs = senderRefs.compactMap { $0.recordID }
+        } else if let recordIDs = recordIDs {
             let fetchOp = CKFetchRecordsOperation(recordIDs: recordIDs)
             fetchOp.qualityOfService = .userInitiated
             
             fetchOp.fetchRecordsCompletionBlock = { (records, error) in
-                if let error = error {
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                    return completion(nil)
-                }
-                
-                if let records = records {
-                    let senders = records.compactMap { Sender(senderRecord: $0.value) }
-                    completion(senders)
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                        return completion(nil)
+                    }
+                    
+                    if let records = records {
+                        let senders = records.compactMap { Sender(senderRecord: $0.value) }
+                        completion(senders)
+                    }
                 }
             }
         }
-        
-        
     }
     
     static func saveNewSenderWith(appleID: CKRecord.ID, displayName: String, completion: @escaping(Sender?) -> Void) {
@@ -84,16 +84,18 @@ struct CKController {
         let newSenderRecord = CKRecord(sender: sender)
         
         publicDB.save(newSenderRecord) { record, error in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(nil)
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(nil)
+                }
+                
+                guard let senderRecord = record,
+                      let sender = Sender(senderRecord: senderRecord) else { return completion(nil) }
+                
+                self.selfSender = sender
+                completion(sender)
             }
-            
-            guard let senderRecord = record,
-                  let sender = Sender(senderRecord: senderRecord) else { return completion(nil) }
-            
-            self.selfSender = sender
-            completion(sender)
         }
     }
     
@@ -102,143 +104,155 @@ struct CKController {
         let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
         
         publicDB.perform(query, inZoneWith: nil) { (records, error) in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(.failure(.fetchError))
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(.failure(.fetchError))
+                }
+                
+                guard var records = records else { return completion(.success([])) }
+                records.sort { ($0[SenderStrings.displayName] as! String) < ($1[SenderStrings.displayName] as! String) }
+                                
+                var senders = records.compactMap { Sender(senderRecord: $0) }
+                
+                if let selfSender = selfSender,
+                   let selfSenderIndex = senders.firstIndex(of: selfSender) {
+                    senders.remove(at: selfSenderIndex)
+                }
+                
+                completion(.success(senders))
             }
-            
-            guard var records = records else { return completion(.success([])) }
-            records.sort { ($0[SenderStrings.displayName] as! String) < ($1[SenderStrings.displayName] as! String) }
-            let senders = records.compactMap { Sender(senderRecord: $0) }
-            completion(.success(senders))
         }
     }
     
     
     //  MARK: - CONVERSATION FUNCTIONS
-    static func createNewConversationWith(otherSender: Sender, completion: @escaping(Result<Conversation, CKError>) -> Void ) {
-        guard let selfSender = selfSender else { return completion(.failure(.createError)) }
-        let conversation = Conversation(selfSender: selfSender, otherSender: otherSender)
+    static func createNewConversationWith(otherSender: Sender, completion: @escaping(Conversation?) -> Void ) {
+        guard let selfSender = selfSender else { return completion(nil) }
+        let conversation = Conversation(senderA: selfSender, senderB: otherSender)
         
         let conversationRecord = CKRecord(conversation: conversation)
         
         publicDB.save(conversationRecord) { record, error in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(.failure(.createError))
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(nil)
+                }
+                
+                guard let record = record else { return completion(nil) }
+                
+                let conversation = Conversation(conversationRecord: record)
+                
+                completion(conversation)
             }
-            
-            guard let record = record else { return completion(.failure(.createError)) }
-            
-//            guard let record = record,
-//                  let otherSenderRef = record[ConversationStrings.otherSenderRef] as? CKRecord.Reference,
-//                  let selfSenderRef = record[ConversationStrings.selfSenderRef] as? CKRecord.Reference else { return completion(.failure(.createError)) }
-//
-//            let senderRefs = [selfSenderRef, otherSenderRef]
-//
-//            CKController.fetchSendersByUserRefOrAppleID(userRef: nil, senderRefs: senderRefs) { senders in
-//                guard let senders = senders else { return completion(.failure(.createError)) }
-//
-//                var otherSender = MessageObjects.dummySender
-//
-//                if senders.first == selfSender {
-//                    otherSender = senders.first!
-//                } else {
-//                    otherSender = senders[1]
-//                }
-//            }
-            
-            let conversation = Conversation(selfSender: selfSender, otherSender: otherSender, ckRecordID: record.recordID)
-            
-            completion(.success(conversation))
         }
     }
     
-    static func fetchAllConversationsWith(senderRef: CKRecord.Reference, completion: @escaping(Result<[Conversation], CKError>) -> Void ) {
+    static func fetchAllConversations(completion: @escaping(Result<[Conversation], CKError>) -> Void ) {
+        guard let selfSender = selfSender else { return completion(.failure(CKError.fetchError)) }
+        let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
         
-        let predicate = NSPredicate(format: "%K == %@", ConversationStrings.selfSenderRef, senderRef)
-        
-        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predicate)
-        
-        publicDB.perform(query, inZoneWith: nil) { (records, error) in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(.failure(.fetchError))
-            }
-            
-            guard var records = records else { return completion(.success([])) }
-            
-            records.sort { $0.modificationDate! < $1.modificationDate! }
-            
-            let convos = records.compactMap { Conversation(conversationRecord: $0) }
-            return completion(.success(convos))
-        }
-    }
-    
-    static func fetchConversationWith(selfSenderRef: CKRecord.Reference, otherSenderRef: CKRecord.Reference, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
-        let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfSenderRef, selfSenderRef, ConversationStrings.otherSenderRef, otherSenderRef)
-        let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.selfSenderRef, otherSenderRef, ConversationStrings.otherSenderRef, selfSenderRef)
+        let predA = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
+        let predB = NSPredicate(format: "%K == %@", ConversationStrings.senderBRef, selfSenderRef)
 
         let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
         
         let query = CKQuery(recordType: ConversationStrings.recordType, predicate: compoundPred)
         
         publicDB.perform(query, inZoneWith: nil) { (records, error) in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(.failure(.fetchError))
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(.failure(.fetchError))
+                }
+                
+                guard var records = records else { return completion(.success([])) }
+                
+                records.sort { $0.modificationDate! < $1.modificationDate! }
+                
+                let convos = records.compactMap { Conversation(conversationRecord: $0) }
+                return completion(.success(convos))
             }
-            
-            guard let records = records else { return completion(.success(nil)) }
-            
-            guard let conversationRecord = records.first,
-                  let conversation = Conversation(conversationRecord: conversationRecord) else { return completion(.failure(.fetchError)) }
-            
-            return completion(.success(conversation))
+        }
+    }
+    
+    static func fetchConversationWith(selfSender: Sender, otherSender: Sender, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
+        let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
+        let otherSenderRef = CKRecord.Reference(recordID: otherSender.ckRecordID, action: .none)
+        
+        let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, selfSenderRef, ConversationStrings.senderBRef, otherSenderRef)
+        let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, otherSenderRef, ConversationStrings.senderBRef, selfSenderRef)
+
+        let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
+        
+        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: compoundPred)
+        
+        publicDB.perform(query, inZoneWith: nil) { (records, error) in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(.failure(.fetchError))
+                }
+                
+                guard let records = records else { return completion(.success(nil)) }
+                
+                guard let conversationRecord = records.first,
+                      let conversation = Conversation(conversationRecord: conversationRecord) else { return completion(.failure(.fetchError)) }
+                
+                return completion(.success(conversation))
+            }
         }
     }
     
     //  MARK: - MESSAGE FUNCTIONS
-    static func sendNewMessageWith(conversationRef: CKRecord.Reference, text: String, completion: @escaping(Result<Message, CKError>) -> Void) {
-        guard let selfSender = CKController.selfSender else { return completion(.failure(.createError)) }
+    static func sendNewMessageTo(conversation: Conversation, text: String, completion: @escaping(Message?) -> Void) {
+        guard let selfSender = CKController.selfSender else { return completion(nil) }
         
-        let senderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
+        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .none)
         
-        let message = Message(senderRef: senderRef, messageText: text)
+        let message = Message(messageText: text, senderObject: selfSender)
         
         //  save message to existing conversation
         let messageRecord = CKRecord(message: message, conversationRef: conversationRef)
         
-        save(messageRecord: messageRecord) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let message):
-                    print("successully saved message with id: \(message.ckRecordID.recordName)")
-                    completion(.success(message))
-                    
-                case .failure(let error):
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                    completion(.failure(.createError))
-                }
-            }
-        }
-    }
-    
-    static func save(messageRecord: CKRecord, completion: @escaping(Result<Message, CKError>) -> Void ) {
         publicDB.save(messageRecord) { record, error in
-            if let error = error {
-                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                return completion(.failure(.createError))
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion(nil)
+                }
+                
+                guard let record = record,
+                      let message = Message(messageRecord: record) else { return completion(nil) }
+                
+                completion(message)
             }
-            
-            guard let record = record,
-                  let message = Message(messageRecord: record) else { return completion(.failure(.createError)) }
-            
-            completion(.success(message))
         }
     }
     
-    static func fetchMessageWith(messageID: String, completion: @escaping(Result<Message, CKError>) -> Void) {
+    static func fetchMessagesFor(conversation: Conversation, completion: @escaping([Message]) -> Void ) {
+        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .none)
         
+        let predicate = NSPredicate(format: "%K == %@", MessageStrings.conversationRef, conversationRef)
+        
+        let query = CKQuery(recordType: MessageStrings.recordType, predicate: predicate)
+        
+        publicDB.perform(query, inZoneWith: nil) { (records, error) in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return completion([])
+                }
+                
+                guard var records = records else { return completion([]) }
+                
+                records.sort { $0.modificationDate! < $1.modificationDate! }
+                
+                let messages = records.compactMap { Message(messageRecord: $0) }
+                return completion(messages)
+            }
+        }
     }
+    
 }   //  End of Struct

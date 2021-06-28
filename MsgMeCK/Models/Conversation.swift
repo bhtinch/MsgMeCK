@@ -10,34 +10,34 @@ import CloudKit
 import MessageKit
 
 struct ConversationStrings {
-    static let selfSenderRef = "selfUserRef"
-    static let otherSenderRef = "otherUserRef"
+    static let senderARef = "senderARef"
+    static let senderBRef = "senderBRef"
     static let recordType = "Conversation"
 }
 
 class Conversation {
-    let selfSender: Sender
-    let otherSender: Sender
+    let senderA: Sender
+    let senderB: Sender
     let ckRecordID: CKRecord.ID
         
-    init(selfSender: Sender, otherSender: Sender, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
-        self.selfSender = selfSender
-        self.otherSender = otherSender
+    init(senderA: Sender, senderB: Sender, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+        self.senderA = senderA
+        self.senderB = senderB
         self.ckRecordID = ckRecordID
     }
     
     //  convenience from ckRecord object
     convenience init?(conversationRecord: CKRecord) {
-        guard let selfSenderRef = conversationRecord[ConversationStrings.selfSenderRef] as? CKRecord.Reference,
-              let otherSenderRef = conversationRecord[ConversationStrings.otherSenderRef] as? CKRecord.Reference else { return nil }
+        guard let senderARef = conversationRecord[ConversationStrings.senderARef] as? CKRecord.Reference,
+              let senderBRef = conversationRecord[ConversationStrings.senderBRef] as? CKRecord.Reference else { return nil }
                 
-        let selfSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: selfSenderRef.recordID)
-        let otherSenderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: otherSenderRef.recordID)
+        let senderARecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderARef.recordID)
+        let senderBRecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderBRef.recordID)
 
-        guard let selfSender = Sender(senderRecord: selfSenderRecord),
-              let otherSender = Sender(senderRecord: otherSenderRecord) else { return nil }
+        guard let senderA = Sender(senderRecord: senderARecord),
+              let senderB = Sender(senderRecord: senderBRecord) else { return nil }
         
-        self.init(selfSender: selfSender, otherSender: otherSender, ckRecordID: conversationRecord.recordID)
+        self.init(senderA: senderA, senderB: senderB, ckRecordID: conversationRecord.recordID)
     }
 }   //  End of Class
 
@@ -54,12 +54,12 @@ extension CKRecord {
     convenience init(conversation: Conversation) {
         self.init(recordType: ConversationStrings.recordType, recordID: conversation.ckRecordID)
         
-        let selfUserRef = CKRecord.Reference(recordID: conversation.selfSender.ckRecordID, action: .none)
-        let otherUserRef = CKRecord.Reference(recordID: conversation.otherSender.ckRecordID, action: .none)
+        let senderARef = CKRecord.Reference(recordID: conversation.senderA.ckRecordID, action: .none)
+        let senderBRef = CKRecord.Reference(recordID: conversation.senderB.ckRecordID, action: .none)
         
         self.setValuesForKeys([
-            ConversationStrings.selfSenderRef : selfUserRef,
-            ConversationStrings.otherSenderRef : otherUserRef
+            ConversationStrings.senderARef : senderARef,
+            ConversationStrings.senderBRef : senderBRef
         ])
     }
 }   //  End of Extension

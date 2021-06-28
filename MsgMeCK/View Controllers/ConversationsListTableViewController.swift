@@ -13,9 +13,6 @@ class ConversationsListTableViewController: UITableViewController {
     //  MARK: - OUTLETS
     @IBOutlet weak var addBarButton: UIBarButtonItem!
     
-    //  MARK: - PROPERTIES
-    var conversations: [Conversation] = []
-
     //  MARK: - LIFECYCLES
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,40 +24,34 @@ class ConversationsListTableViewController: UITableViewController {
     
     //  MARK: - METHODS
     func fetchAppleID() {
-        // fetch icloud id
-        CKController.fetchCurrentUser { record in
-            DispatchQueue.main.async {
-                if let record = record {
-                    self.fetchSenderWith(userRecordID: record.recordID)
-                } else {
-                    self.addBarButton.isEnabled = false
-                    Alerts.presentAlertWith(title: "Whoops!", message: "Please sign into iCloud in your device settings to use this app.", sender: self)
-                }
+        // fetch icloud appleID
+        CKController.fetchCurrentAppleUser { record in
+            if let appleUserRecord = record {
+                self.fetchSenderWith(appleUserRecordID: appleUserRecord.recordID)
+            } else {
+                self.addBarButton.isEnabled = false
+                Alerts.presentAlertWith(title: "Whoops!", message: "Please sign into iCloud in your device settings to use this app.", sender: self)
             }
         }
     }
     
-    func fetchSenderWith(userRecordID: CKRecord.ID) {
-        let userRef = CKRecord.Reference(recordID: userRecordID, action: .none)
-        
+    func fetchSenderWith(appleUserRecordID: CKRecord.ID) {
         //  fetch Sender record
-        CKController.fetchSendersByUserRefOrAppleID(userRef: userRef, senderRefs: nil){ senders in
-            DispatchQueue.main.async {
+        CKController.fetchSendersByRecordIdOrAppleId(appleID: appleUserRecordID, recordIDs: nil) { senders in
+            
+            if let senders = senders {
+                //  sender record exists and fetched
+                guard let selfSender = senders.first else { return }
+                print("sender successfully fetched with id: \(selfSender)")
+                CKController.selfSender = selfSender
                 
-                if let senders = senders {
-                    //  sender record exists and fetched
-                    guard let selfSender = senders.first else { return }
-                    
-                    print("sender successfully fetched with id: \(selfSender)")
-                    CKController.selfSender = selfSender
-                    let senderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
-                    self.addBarButton.isEnabled = true
-                    self.fetchConversationsWith(senderRef: senderRef)
-                    
-                } else {
-                    //  sender record does not exist; need to create one
-                    self.createNewSenderWith(appleID: userRecordID)
-                }
+                self.addBarButton.isEnabled = true
+                self.fetchConversations()
+                
+            } else {
+                //  sender record does not exist; need to create one
+                print("Sender does not exist yet for this apple user.")
+                self.createNewSenderWith(appleID: appleUserRecordID)
             }
         }
     }
@@ -90,28 +81,24 @@ class ConversationsListTableViewController: UITableViewController {
     func saveNewSenderWith(appleID: CKRecord.ID, displayName: String) {
         
         CKController.saveNewSenderWith(appleID: appleID, displayName: displayName) { sender in
-            DispatchQueue.main.async {
-                if let selfSender = sender {
-                    CKController.selfSender = selfSender
-                    print("sender successfully created with id: \(selfSender.ckRecordID.recordName)")
-                    self.addBarButton.isEnabled = true
-                } else {
-                    Alerts.presentAlertWith(title: "Whoops!", message: "There was an error creating your account.  Please close the app and try again.", sender: self)
-                }
+            if let selfSender = sender {
+                CKController.selfSender = selfSender
+                print("sender successfully created with id: \(selfSender.ckRecordID.recordName)")
+                self.addBarButton.isEnabled = true
+            } else {
+                Alerts.presentAlertWith(title: "Whoops!", message: "There was an error creating your account.  Please close the app and try again.", sender: self)
             }
         }
     }
     
-    func fetchConversationsWith(senderRef: CKRecord.Reference) {
-        CKController.fetchAllConversationsWith(senderRef: senderRef) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let convos):
-                    self.conversations = convos
-                    self.tableView.reloadData()
-                case .failure(let error):
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                }
+    func fetchConversations() {
+        CKController.fetchAllConversations() { result in
+            switch result {
+            case .success(let convos):
+                CKController.conversations = convos
+                self.tableView.reloadData()
+            case .failure(let error):
+                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
             }
         }
     }
@@ -126,7 +113,7 @@ class ConversationsListTableViewController: UITableViewController {
 
         let conversation = CKController.conversations[indexPath.row]
         
-        cell.textLabel?.text = conversation.otherSender.displayName
+        cell.textLabel?.text = conversation.senderB.displayName
 
         return cell
     }
@@ -144,10 +131,15 @@ class ConversationsListTableViewController: UITableViewController {
             guard let indexPath = tableView.indexPathForSelectedRow,
                   let destination = segue.destination as? ConversationViewController else { return }
             
-            let conversationID = conversations[indexPath.row].ckRecordID
-            let conversationRef = CKRecord.Reference(recordID: conversationID, action: .none)
-            destination.conversationRef = conversationRef
-            destination.otherSender = conversations[indexPath.row].otherSender
+            let conversation = CKController.conversations[indexPath.row]
+            destination.conversation = conversation
+            
+            var otherSender = CKController.conversations[indexPath.row].senderB
+            if otherSender == CKController.selfSender {
+                otherSender = CKController.conversations[indexPath.row].senderA
+            }
+            
+            destination.otherSender = otherSender
         }
     }
 }   //  End of Class

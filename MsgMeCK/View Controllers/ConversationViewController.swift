@@ -13,10 +13,9 @@ import InputBarAccessoryView
 class ConversationViewController: MessagesViewController, MessagesLayoutDelegate, MessageCellDelegate {
     
     //  MARK: - PROPERTIES
-    var messages: [Message] = []
     var otherSender: Sender?
-    var conversationRef: CKRecord.Reference?
-    var messageText: String?
+    var conversation: Conversation?
+    //var messageText: String?
     
     //  MARK: - LIFECYLES
     override func viewDidLoad() {
@@ -24,7 +23,7 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
         configureMessageCollectionView()
         configureMessageInputBar()
         
-        if conversationRef != nil {
+        if conversation != nil {
             fetchConversation()
         }
     }
@@ -69,17 +68,10 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
     
     func createNewConversation() {
         guard let otherSender = otherSender else { return }
-        CKController.createNewConversationWith(otherSender: otherSender) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let converation):
-                    let conversationRef = CKRecord.Reference(recordID: converation.ckRecordID, action: .none)
-                    self.conversationRef = conversationRef
-                    self.saveMessage()
-                case .failure(let error):
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                }
-            }
+        CKController.createNewConversationWith(otherSender: otherSender) { conversation in
+            guard let conversation = conversation else { return }
+            self.conversation = conversation
+            self.messageInputBar.didSelectSendButton()
         }
     }
     
@@ -87,21 +79,15 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
         guard let otherSender = otherSender,
               let selfSender = CKController.selfSender else { return }
         
-        let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
-        let otherSenderRef = CKRecord.Reference(recordID: otherSender.ckRecordID, action: .none)
-        
-        CKController.fetchConversationWith(selfSenderRef: selfSenderRef, otherSenderRef: otherSenderRef) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let conversation):
-                    if let conversation = conversation {
-                        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .none)
-                        self.conversationRef = conversationRef
-                        self.fetchMessages()
-                    }
-                case .failure(let error):
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+        CKController.fetchConversationWith(selfSender: selfSender, otherSender: otherSender) { result in
+            switch result {
+            case .success(let conversation):
+                if let conversation = conversation {
+                    self.conversation = conversation
+                    self.fetchMessages()
                 }
+            case .failure(let error):
+                print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
             }
         }
     }
@@ -109,8 +95,12 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
     
     //  BenTin - DOES THIS NEED TO BE A LISTENER AND NOT JUST A FETCH???
     func fetchMessages() {
-        guard let conversationRef = conversationRef else { return }
+        guard let conversation = conversation else { return }
         
+        CKController.fetchMessagesFor(conversation: conversation) { messages in
+            CKController.messages = messages
+            self.messagesCollectionView.reloadData()
+        }
     }
     
 }   //  End of Class
@@ -119,28 +109,17 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
 extension ConversationViewController: InputBarAccessoryViewDelegate {
     
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        self.messageText = text
-        if conversationRef == nil {
+        if conversation == nil {
             self.createNewConversation()
             return
+            
         } else {
-            saveMessage()
-        }
-    }
-    
-    func saveMessage() {
-        guard let conversationRef = conversationRef,
-              let text = messageText else { return }
-        CKController.sendNewMessageWith(conversationRef: conversationRef, text: text) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let message):
-                    self.messages.append(message)
-                    self.messagesCollectionView.reloadData()
-                    self.resetInputBar()
-                case .failure(let error):
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                }
+            CKController.sendNewMessageTo(conversation: conversation!, text: text) { message in
+                guard let message = message else { return }
+                print("successully saved message with id: \(message.ckRecordID.recordName)")
+                CKController.messages.append(message)
+                self.messagesCollectionView.reloadData()
+                self.resetInputBar()
             }
         }
     }
@@ -174,10 +153,10 @@ extension ConversationViewController: MessagesDataSource, MessagesDisplayDelegat
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-        return messages[indexPath.row]
+        return CKController.messages[indexPath.row]
     }
     
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-        return messages.count
+        return CKController.messages.count
     }
 }   //  End of Extension

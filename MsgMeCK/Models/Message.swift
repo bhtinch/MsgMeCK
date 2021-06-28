@@ -22,16 +22,14 @@ struct MessageObjects {
 }
 
 class Message: MessageType {
-    //var sender: SenderType
     let ckRecordID: CKRecord.ID
     let messageText: String
     var sentDate: Date
-    var senderRef: CKRecord.Reference
     
-    var sender: SenderType {        
-        let senderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderRef.recordID)
-        let sender = Sender(senderRecord: senderRecord)
-        return sender ?? MessageObjects.dummySender
+    let senderObject: Sender
+
+    var sender: SenderType {
+        return senderObject
     }
     
     var messageId: String {
@@ -42,10 +40,10 @@ class Message: MessageType {
         return .text(messageText)
     }
     
-    init(sentDate: Date = Date(), senderRef: CKRecord.Reference, messageText: String, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+    init(sentDate: Date = Date(), messageText: String, senderObject: Sender, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
         self.sentDate = sentDate
-        self.senderRef = senderRef
         self.messageText = messageText
+        self.senderObject = senderObject
         self.ckRecordID = ckRecordID
     }
     
@@ -55,7 +53,11 @@ class Message: MessageType {
               let sentDate = messageRecord[MessageStrings.sentDate] as? Date,
               let senderRef = messageRecord[MessageStrings.senderRef] as? CKRecord.Reference else { return nil }
         
-        self.init(sentDate: sentDate, senderRef: senderRef, messageText: messageText, ckRecordID: messageRecord.recordID)
+        let senderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderRef.recordID)
+        
+        guard let senderObject = Sender(senderRecord: senderRecord) else { return nil }
+        
+        self.init(sentDate: sentDate, messageText: messageText, senderObject: senderObject, ckRecordID: messageRecord.recordID)
     }
 }   //  End of Class
 
@@ -74,7 +76,7 @@ extension CKRecord {
         self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
         
         // reference to the user RECORD in CK
-        let senderRef = CKRecord.Reference(recordID: message.ckRecordID, action: .none)
+        let senderRef = CKRecord.Reference(recordID: message.senderObject.ckRecordID, action: .none)
         
         self.setValuesForKeys([
             MessageStrings.messageText : message.messageText,

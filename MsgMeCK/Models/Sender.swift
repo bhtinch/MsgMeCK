@@ -12,7 +12,6 @@ import MessageKit
 struct SenderStrings  {
     static let recordType = "Sender"
     static let displayName = "displayName"
-    static let userRef = "userRef"
     static let appleID = "appleID"
 }
 
@@ -33,9 +32,7 @@ class Sender: SenderType {
     
     convenience init?(senderRecord: CKRecord) {
         guard let displayName = senderRecord[SenderStrings.displayName] as? String,
-              let appleIDString = senderRecord[SenderStrings.appleID] as? String else { return nil }
-        
-        let appleID = CKRecord.ID(recordName: appleIDString)
+              let appleID = senderRecord[SenderStrings.appleID] as? CKRecord.ID else { return nil }
         
         self.init(displayName: displayName, appleID: appleID, ckRecordID: senderRecord.recordID)
     }
@@ -47,7 +44,7 @@ extension CKRecord {
         
         self.setValuesForKeys([
             SenderStrings.displayName : sender.displayName,
-            SenderStrings.appleID : sender.appleID.recordName
+            SenderStrings.appleID : sender.appleID
         ])
     }
 }
