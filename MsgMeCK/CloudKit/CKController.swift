@@ -15,8 +15,15 @@ struct CKController {
     
     static var messages: [Message] = []
     static var conversations: [Conversation] = []
-    static var senders: [Sender] = []
-    static var selfSender: Sender?
+    static var senderRefs: [CKRecord.Reference] = []
+    static var selfSender: Sender? {
+        didSet {
+            if let selfSender = selfSender {
+                selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
+            }
+        }
+    }
+    static var selfSenderRef: CKRecord.Reference?
     
     //  MARK: - USER FUNCTIONS
     static func fetchCurrentAppleUser(completion: @escaping (CKRecord?) -> Void) {
@@ -46,7 +53,7 @@ struct CKController {
             publicDB.perform(query, inZoneWith: nil) { (records, error) in
                 DispatchQueue.main.async {
                     if let error = error {
-                        print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                        print("\n***Error*** in \(#function)\n\nSender(s) could not be found\n")
                         return completion(nil)
                     }
                     
@@ -99,9 +106,10 @@ struct CKController {
         }
     }
     
-    static func fetchAllSenders(completion: @escaping(Result<[Sender], CKError>) -> Void ) {
+    static func fetchAllSenders(completion: @escaping(Result<[CKRecord.Reference], CKError>) -> Void ) {
         let predicate = NSPredicate(value: true)
         let query = CKQuery(recordType: SenderStrings.recordType, predicate: predicate)
+        guard let selfSender = selfSender else { return completion(.failure(CKError.fetchError)) }
         
         publicDB.perform(query, inZoneWith: nil) { (records, error) in
             DispatchQueue.main.async {
@@ -113,23 +121,24 @@ struct CKController {
                 guard var records = records else { return completion(.success([])) }
                 records.sort { ($0[SenderStrings.displayName] as! String) < ($1[SenderStrings.displayName] as! String) }
                                 
-                var senders = records.compactMap { Sender(senderRecord: $0) }
+                var senderRefs = records.compactMap { CKRecord.Reference(recordID: $0.recordID, action: .none) }
                 
-                if let selfSender = selfSender,
-                   let selfSenderIndex = senders.firstIndex(of: selfSender) {
-                    senders.remove(at: selfSenderIndex)
+                let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
+                
+                if let selfSenderIndex = senderRefs.firstIndex(of: selfSenderRef) {
+                    senderRefs.remove(at: selfSenderIndex)
                 }
                 
-                completion(.success(senders))
+                completion(.success(senderRefs))
             }
         }
     }
     
     
     //  MARK: - CONVERSATION FUNCTIONS
-    static func createNewConversationWith(otherSender: Sender, completion: @escaping(Conversation?) -> Void ) {
-        guard let selfSender = selfSender else { return completion(nil) }
-        let conversation = Conversation(senderA: selfSender, senderB: otherSender)
+    static func createNewConversationWith(otherSenderRef: CKRecord.Reference, completion: @escaping(Conversation?) -> Void ) {
+        guard let selfSenderRef = selfSenderRef else { return completion(nil) }
+        let conversation = Conversation(senderARef: selfSenderRef, senderBRef: otherSenderRef)
         
         let conversationRecord = CKRecord(conversation: conversation)
         
@@ -177,9 +186,7 @@ struct CKController {
         }
     }
     
-    static func fetchConversationWith(selfSender: Sender, otherSender: Sender, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
-        let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
-        let otherSenderRef = CKRecord.Reference(recordID: otherSender.ckRecordID, action: .none)
+    static func fetchConversationWith(selfSenderRef: CKRecord.Reference, otherSenderRef: CKRecord.Reference, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
         
         let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, selfSenderRef, ConversationStrings.senderBRef, otherSenderRef)
         let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, otherSenderRef, ConversationStrings.senderBRef, selfSenderRef)
@@ -207,11 +214,11 @@ struct CKController {
     
     //  MARK: - MESSAGE FUNCTIONS
     static func sendNewMessageTo(conversation: Conversation, text: String, completion: @escaping(Message?) -> Void) {
-        guard let selfSender = CKController.selfSender else { return completion(nil) }
+        guard let selfSenderRef = CKController.selfSenderRef else { return completion(nil) }
         
         let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .none)
         
-        let message = Message(messageText: text, senderObject: selfSender)
+        let message = Message(messageText: text, senderObjectRef: selfSenderRef)
         
         //  save message to existing conversation
         let messageRecord = CKRecord(message: message, conversationRef: conversationRef)

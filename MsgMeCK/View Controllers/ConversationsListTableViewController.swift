@@ -50,7 +50,7 @@ class ConversationsListTableViewController: UITableViewController {
                 
             } else {
                 //  sender record does not exist; need to create one
-                print("Sender does not exist yet for this apple user.")
+                print("\nSender does not exist yet for this apple user.\n")
                 self.createNewSenderWith(appleID: appleUserRecordID)
             }
         }
@@ -113,7 +113,7 @@ class ConversationsListTableViewController: UITableViewController {
 
         let conversation = CKController.conversations[indexPath.row]
         
-        cell.textLabel?.text = conversation.senderB.displayName
+        cell.textLabel?.text = conversation.senderB?.displayName ?? "Unknown Sender"
 
         return cell
     }
@@ -134,12 +134,13 @@ class ConversationsListTableViewController: UITableViewController {
             let conversation = CKController.conversations[indexPath.row]
             destination.conversation = conversation
             
-            var otherSender = CKController.conversations[indexPath.row].senderB
-            if otherSender == CKController.selfSender {
-                otherSender = CKController.conversations[indexPath.row].senderA
+            var otherSenderRef = CKController.conversations[indexPath.row].senderBRef
+            
+            if otherSenderRef.recordID == CKController.selfSender?.ckRecordID {
+                otherSenderRef = CKController.conversations[indexPath.row].senderARef
             }
             
-            destination.otherSender = otherSender
+            destination.otherSenderRef = otherSenderRef
         }
     }
 }   //  End of Class

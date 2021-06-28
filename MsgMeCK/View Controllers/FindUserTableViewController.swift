@@ -21,8 +21,8 @@ class FindUserTableViewController: UITableViewController {
     func fetchSenders() {
         CKController.fetchAllSenders { result in
             switch result {
-            case .success(let senders):
-                CKController.senders = senders
+            case .success(let senderRefs):
+                CKController.senderRefs = senderRefs
                 self.tableView.reloadData()
             case .failure(let error):
                 print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
@@ -32,15 +32,15 @@ class FindUserTableViewController: UITableViewController {
 
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return CKController.senders.count
+        return CKController.senderRefs.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
-        let sender = CKController.senders[indexPath.row]
+        let senderRef = CKController.senderRefs[indexPath.row]
         
-        cell.textLabel?.text = sender.displayName
+        cell.textLabel?.text = senderRef.recordID.recordName
         
         return cell
     }
@@ -51,7 +51,7 @@ class FindUserTableViewController: UITableViewController {
             guard let indexPath = tableView.indexPathForSelectedRow,
                   let destination = segue.destination as? ConversationViewController else { return }
             
-            destination.otherSender = CKController.senders[indexPath.row]
+            destination.otherSenderRef = CKController.senderRefs[indexPath.row]
             destination.conversation = nil
         }
     }

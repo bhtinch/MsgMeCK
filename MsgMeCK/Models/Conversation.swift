@@ -16,13 +16,15 @@ struct ConversationStrings {
 }
 
 class Conversation {
-    let senderA: Sender
-    let senderB: Sender
+    var senderA: Sender? = nil
+    var senderB: Sender? = nil
+    let senderARef: CKRecord.Reference
+    let senderBRef: CKRecord.Reference
     let ckRecordID: CKRecord.ID
         
-    init(senderA: Sender, senderB: Sender, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
-        self.senderA = senderA
-        self.senderB = senderB
+    init(senderARef: CKRecord.Reference, senderBRef: CKRecord.Reference, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+        self.senderARef = senderARef
+        self.senderBRef = senderBRef
         self.ckRecordID = ckRecordID
     }
     
@@ -30,14 +32,8 @@ class Conversation {
     convenience init?(conversationRecord: CKRecord) {
         guard let senderARef = conversationRecord[ConversationStrings.senderARef] as? CKRecord.Reference,
               let senderBRef = conversationRecord[ConversationStrings.senderBRef] as? CKRecord.Reference else { return nil }
-                
-        let senderARecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderARef.recordID)
-        let senderBRecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderBRef.recordID)
-
-        guard let senderA = Sender(senderRecord: senderARecord),
-              let senderB = Sender(senderRecord: senderBRecord) else { return nil }
         
-        self.init(senderA: senderA, senderB: senderB, ckRecordID: conversationRecord.recordID)
+        self.init(senderARef: senderARef, senderBRef: senderBRef, ckRecordID: conversationRecord.recordID)
     }
 }   //  End of Class
 
@@ -54,8 +50,8 @@ extension CKRecord {
     convenience init(conversation: Conversation) {
         self.init(recordType: ConversationStrings.recordType, recordID: conversation.ckRecordID)
         
-        let senderARef = CKRecord.Reference(recordID: conversation.senderA.ckRecordID, action: .none)
-        let senderBRef = CKRecord.Reference(recordID: conversation.senderB.ckRecordID, action: .none)
+        let senderARef = CKRecord.Reference(recordID: conversation.senderARef.recordID, action: .none)
+        let senderBRef = CKRecord.Reference(recordID: conversation.senderBRef.recordID, action: .none)
         
         self.setValuesForKeys([
             ConversationStrings.senderARef : senderARef,

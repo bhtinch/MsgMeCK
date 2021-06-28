@@ -26,10 +26,11 @@ class Message: MessageType {
     let messageText: String
     var sentDate: Date
     
-    let senderObject: Sender
+    var senderObject: Sender? = nil
+    let senderObjectRef: CKRecord.Reference
 
     var sender: SenderType {
-        return senderObject
+        return senderObject ?? MessageObjects.dummySender
     }
     
     var messageId: String {
@@ -40,10 +41,10 @@ class Message: MessageType {
         return .text(messageText)
     }
     
-    init(sentDate: Date = Date(), messageText: String, senderObject: Sender, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+    init(sentDate: Date = Date(), messageText: String, senderObjectRef: CKRecord.Reference, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
         self.sentDate = sentDate
         self.messageText = messageText
-        self.senderObject = senderObject
+        self.senderObjectRef = senderObjectRef
         self.ckRecordID = ckRecordID
     }
     
@@ -51,13 +52,9 @@ class Message: MessageType {
     convenience init?(messageRecord: CKRecord) {
         guard let messageText = messageRecord[MessageStrings.messageText] as? String,
               let sentDate = messageRecord[MessageStrings.sentDate] as? Date,
-              let senderRef = messageRecord[MessageStrings.senderRef] as? CKRecord.Reference else { return nil }
+              let senderObjectRef = messageRecord[MessageStrings.senderRef] as? CKRecord.Reference else { return nil }
         
-        let senderRecord = CKRecord(recordType: SenderStrings.recordType, recordID: senderRef.recordID)
-        
-        guard let senderObject = Sender(senderRecord: senderRecord) else { return nil }
-        
-        self.init(sentDate: sentDate, messageText: messageText, senderObject: senderObject, ckRecordID: messageRecord.recordID)
+        self.init(sentDate: sentDate, messageText: messageText, senderObjectRef: senderObjectRef, ckRecordID: messageRecord.recordID)
     }
 }   //  End of Class
 
@@ -76,7 +73,7 @@ extension CKRecord {
         self.init(recordType: MessageStrings.recordType, recordID: message.ckRecordID)
         
         // reference to the user RECORD in CK
-        let senderRef = CKRecord.Reference(recordID: message.senderObject.ckRecordID, action: .none)
+        let senderRef = CKRecord.Reference(recordID: message.senderObjectRef.recordID, action: .none)
         
         self.setValuesForKeys([
             MessageStrings.messageText : message.messageText,

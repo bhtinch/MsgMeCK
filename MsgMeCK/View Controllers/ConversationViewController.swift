@@ -13,6 +13,7 @@ import InputBarAccessoryView
 class ConversationViewController: MessagesViewController, MessagesLayoutDelegate, MessageCellDelegate {
     
     //  MARK: - PROPERTIES
+    var otherSenderRef: CKRecord.Reference?
     var otherSender: Sender?
     var conversation: Conversation?
     //var messageText: String?
@@ -67,8 +68,8 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
     }
     
     func createNewConversation() {
-        guard let otherSender = otherSender else { return }
-        CKController.createNewConversationWith(otherSender: otherSender) { conversation in
+        guard let otherSenderRef = otherSenderRef else { return }
+        CKController.createNewConversationWith(otherSenderRef: otherSenderRef) { conversation in
             guard let conversation = conversation else { return }
             self.conversation = conversation
             self.messageInputBar.didSelectSendButton()
@@ -76,10 +77,10 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
     }
     
     func fetchConversation() {
-        guard let otherSender = otherSender,
-              let selfSender = CKController.selfSender else { return }
+        guard let otherSenderRef = otherSenderRef,
+              let selfSenderRef = CKController.selfSenderRef else { return }
         
-        CKController.fetchConversationWith(selfSender: selfSender, otherSender: otherSender) { result in
+        CKController.fetchConversationWith(selfSenderRef: selfSenderRef, otherSenderRef: otherSenderRef) { result in
             switch result {
             case .success(let conversation):
                 if let conversation = conversation {
