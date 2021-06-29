@@ -41,7 +41,7 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <segue destination="qYz-Jd-eoB" kind="show" identifier="toConverstationVC" trigger="accessoryAction" id="pzX-Gu-Piy"/>
+                                    <segue destination="qYz-Jd-eoB" kind="show" identifier="toConversationVC" id="DiS-LZ-0df"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -141,7 +141,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="pzX-Gu-Piy"/>
+        <segue reference="DiS-LZ-0df"/>
     </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">

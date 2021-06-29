@@ -16,6 +16,7 @@ struct CKController {
     static var messages: [Message] = []
     static var conversations: [Conversation] = []
     static var senderRefs: [CKRecord.Reference] = []
+    
     static var selfSender: Sender? {
         didSet {
             if let selfSender = selfSender {
@@ -82,6 +83,11 @@ struct CKController {
                     }
                 }
             }
+            publicDB.add(fetchOp)
+            
+        } else {
+            print("No appleID or recordIDs exist.")
+            completion([])
         }
     }
     
@@ -134,6 +140,21 @@ struct CKController {
         }
     }
     
+    static func applySendersTo(messages: [Message], otherSender: Sender) {
+        guard let selfSender = selfSender,
+              let selfSenderRef = selfSenderRef else { return }
+        
+        messages.forEach { $0.senderObject = selfSender }
+        
+        for message in messages {
+            if message.senderObjectRef != selfSenderRef {
+                message.senderObject = otherSender
+            }
+        }
+        
+        CKController.messages = messages
+    }
+    
     
     //  MARK: - CONVERSATION FUNCTIONS
     static func createNewConversationWith(otherSenderRef: CKRecord.Reference, completion: @escaping(Conversation?) -> Void ) {
@@ -164,11 +185,6 @@ struct CKController {
         
         var records: [CKRecord] = []
         
-//        let predA = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
-//        let predB = NSPredicate(format: "%K == %@", ConversationStrings.senderBRef, selfSenderRef)
-//
-//        let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
-        
         let predicate = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
         
         let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predicate)
@@ -197,7 +213,9 @@ struct CKController {
                         
                         if let fetchedRecords = fetchedRecords {
                             records.append(contentsOf: fetchedRecords)
-                            
+                        }
+                        
+                        if !records.isEmpty {
                             records.sort { $0.modificationDate! < $1.modificationDate! }
                             
                             let convos = records.compactMap { Conversation(conversationRecord: $0) }
@@ -212,27 +230,50 @@ struct CKController {
     }
     
     static func fetchConversationWith(selfSenderRef: CKRecord.Reference, otherSenderRef: CKRecord.Reference, completion: @escaping(Result<Conversation?, CKError>) -> Void ) {
+        var records: [CKRecord] = []
         
+        //  Note that orCompoundPredicate queries are not available in Cloudkit... so have to do 2 separate queries and append the results to a local array.
+        //  query for selfSenderRef in senderA spot AND otherSenderRef in senderB spot
         let predA = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, selfSenderRef, ConversationStrings.senderBRef, otherSenderRef)
-        let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, otherSenderRef, ConversationStrings.senderBRef, selfSenderRef)
-
-        let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
         
-        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: compoundPred)
+        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predA)
         
-        publicDB.perform(query, inZoneWith: nil) { (records, error) in
+        publicDB.perform(query, inZoneWith: nil) { (fetchedRecords, error) in
             DispatchQueue.main.async {
                 if let error = error {
                     print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
                     return completion(.failure(.fetchError))
                 }
                 
-                guard let records = records else { return completion(.success(nil)) }
+                if let fetchedRecords = fetchedRecords {
+                    records.append(contentsOf: fetchedRecords)
+                }
                 
-                guard let conversationRecord = records.first,
-                      let conversation = Conversation(conversationRecord: conversationRecord) else { return completion(.failure(.fetchError)) }
+                //  query for otherSenderRef in senderA spot AND selfSenderRef in senderB spot
+                let predB = NSPredicate(format: "%K == %@ AND %K == %@", ConversationStrings.senderARef, otherSenderRef, ConversationStrings.senderBRef, selfSenderRef)
                 
-                return completion(.success(conversation))
+                let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predB)
+                
+                publicDB.perform(query, inZoneWith: nil) { (fetchedRecords, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                            return completion(.failure(.fetchError))
+                        }
+                        
+                        if let fetchedRecords = fetchedRecords {
+                            records.append(contentsOf: fetchedRecords)
+                        }
+                        
+                        if !records.isEmpty {
+                            guard let conversationRecord = records.first,
+                                  let conversation = Conversation(conversationRecord: conversationRecord) else { return completion(.failure(.fetchError)) }
+                            return completion(.success(conversation))
+                        }
+                
+                        return completion(.success(nil))
+                    }
+                }
             }
         }
     }
@@ -286,5 +327,26 @@ struct CKController {
             }
         }
     }
+    
+//    static func fetchSendersFor(messages: [Message]?, completion: @escaping([Message]) -> Void ) {
+//        var updatedMessages: [Message] = []
+//        guard let messages = messages else { return completion(updatedMessages) }
+//
+//        let senderRecordIDs = messages.compactMap { $0.senderObjectRef.recordID }
+//
+//        fetchSendersByRecordIdOrAppleId(appleID: nil, recordIDs: senderRecordIDs) { senders in
+//            guard let fetchedSenders = senders else { return completion(updatedMessages) }
+//
+//            for i in 0..<messages.count {
+//                let message = messages[i]
+//                let senderObject = fetchedSenders[i]
+//
+//                message.senderObject = senderObject
+//                updatedMessages.append(message)
+//            }
+//
+//            completion(updatedMessages)
+//        }
+//    }
     
 }   //  End of Struct

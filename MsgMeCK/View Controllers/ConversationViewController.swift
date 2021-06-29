@@ -10,7 +10,7 @@ import MessageKit
 import CloudKit
 import InputBarAccessoryView
 
-class ConversationViewController: MessagesViewController, MessagesLayoutDelegate, MessageCellDelegate {
+class ConversationViewController: MessagesViewController {
     
     //  MARK: - PROPERTIES
     var otherSenderRef: CKRecord.Reference?
@@ -85,7 +85,7 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
             case .success(let conversation):
                 if let conversation = conversation {
                     self.conversation = conversation
-                    self.fetchMessages()
+                    self.fetchOtherSender()
                 }
             case .failure(let error):
                 print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
@@ -93,13 +93,30 @@ class ConversationViewController: MessagesViewController, MessagesLayoutDelegate
         }
     }
     
+    func fetchOtherSender() {
+        guard let otherSenderRef = otherSenderRef else { return }
+        
+        CKController.fetchSendersByRecordIdOrAppleId(appleID: nil, recordIDs: [otherSenderRef.recordID]) { senders in
+            if let otherSender = senders?.first {
+                self.otherSender = otherSender
+                print("\'otherSender\' successfully fetched with id: \(otherSender.ckRecordID.recordName) and displayName: \(otherSender.displayName)")
+                self.fetchMessages()
+            } else {
+                print("\'otherSender\' could not be fetched.")
+            }
+        }
+    }
+    
     
     //  BenTin - DOES THIS NEED TO BE A LISTENER AND NOT JUST A FETCH???
     func fetchMessages() {
-        guard let conversation = conversation else { return }
+        guard let conversation = conversation,
+              let otherSender = otherSender else { return }
         
         CKController.fetchMessagesFor(conversation: conversation) { messages in
             CKController.messages = messages
+            
+            CKController.applySendersTo(messages: messages, otherSender: otherSender)
             self.messagesCollectionView.reloadData()
         }
     }
@@ -117,7 +134,7 @@ extension ConversationViewController: InputBarAccessoryViewDelegate {
         } else {
             CKController.sendNewMessageTo(conversation: conversation!, text: text) { message in
                 guard let message = message else { return }
-                print("successully saved message with id: \(message.ckRecordID.recordName)")
+                print("successully saved message with id: \(message.ckRecordID.recordName) and text: \(message.messageText)")
                 CKController.messages.append(message)
                 self.messagesCollectionView.reloadData()
                 self.resetInputBar()
@@ -154,10 +171,25 @@ extension ConversationViewController: MessagesDataSource, MessagesDisplayDelegat
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-        return CKController.messages[indexPath.row]
+        return CKController.messages[indexPath.section]
     }
     
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
         return CKController.messages.count
     }
 }   //  End of Extension
+
+extension ConversationViewController: MessageCellDelegate, MessagesLayoutDelegate {
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        
+        let initials = message.sender.displayName.first ?? "?"
+        avatarView.backgroundColor = .link
+        
+        if message.sender.senderId == CKController.selfSenderRef?.recordID.recordName {
+            avatarView.backgroundColor = #colorLiteral(red: 0.3236978054, green: 0.1063579395, blue: 0.574860394, alpha: 1)
+        }
+        
+        let avatar = Avatar(image: nil, initials: initials.description)
+        avatarView.set(avatar: avatar)
+    }
+}

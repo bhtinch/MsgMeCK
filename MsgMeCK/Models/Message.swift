@@ -26,8 +26,9 @@ class Message: MessageType {
     let messageText: String
     var sentDate: Date
     
-    var senderObject: Sender? = nil
     let senderObjectRef: CKRecord.Reference
+    
+    var senderObject: Sender? = nil
 
     var sender: SenderType {
         return senderObject ?? MessageObjects.dummySender
