@@ -18,7 +18,7 @@ struct MessageStrings {
 }
 
 struct MessageObjects {
-    static let dummySender = Sender(displayName: "Dummy Sender", appleID: CKRecord.ID(recordName: "appleDummyId"), ckRecordID: CKRecord.ID(recordName: "xyzDummyId"))
+    static let dummySender = Sender(displayName: "Dummy Sender", appleID: CKRecord.Reference(recordID: CKRecord.ID(recordName: "appleDummyId"), action: .none), ckRecordID: CKRecord.ID(recordName: "xyzDummyId"))
 }
 
 class Message: MessageType {

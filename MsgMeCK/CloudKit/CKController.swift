@@ -52,7 +52,7 @@ struct CKController {
             
             publicDB.perform(query, inZoneWith: nil) { (records, error) in
                 DispatchQueue.main.async {
-                    if let error = error {
+                    if let _ = error {
                         print("\n***Error*** in \(#function)\n\nSender(s) could not be found\n")
                         return completion(nil)
                     }
@@ -86,7 +86,7 @@ struct CKController {
     }
     
     static func saveNewSenderWith(appleID: CKRecord.ID, displayName: String, completion: @escaping(Sender?) -> Void) {
-        let sender = Sender(displayName: displayName, appleID: appleID)
+        let sender = Sender(displayName: displayName, appleID: CKRecord.Reference(recordID: appleID, action: .deleteSelf))
         
         let newSenderRecord = CKRecord(sender: sender)
         
@@ -162,26 +162,51 @@ struct CKController {
         guard let selfSender = selfSender else { return completion(.failure(CKError.fetchError)) }
         let selfSenderRef = CKRecord.Reference(recordID: selfSender.ckRecordID, action: .none)
         
-        let predA = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
-        let predB = NSPredicate(format: "%K == %@", ConversationStrings.senderBRef, selfSenderRef)
-
-        let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
+        var records: [CKRecord] = []
         
-        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: compoundPred)
+//        let predA = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
+//        let predB = NSPredicate(format: "%K == %@", ConversationStrings.senderBRef, selfSenderRef)
+//
+//        let compoundPred = NSCompoundPredicate(orPredicateWithSubpredicates: [predA, predB])
         
-        publicDB.perform(query, inZoneWith: nil) { (records, error) in
+        let predicate = NSPredicate(format: "%K == %@", ConversationStrings.senderARef, selfSenderRef)
+        
+        let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predicate)
+        
+        publicDB.perform(query, inZoneWith: nil) { (fetchedRecords, error) in
             DispatchQueue.main.async {
                 if let error = error {
                     print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
                     return completion(.failure(.fetchError))
                 }
                 
-                guard var records = records else { return completion(.success([])) }
+                if let fetchedRecords = fetchedRecords {
+                    records.append(contentsOf: fetchedRecords)
+                }
                 
-                records.sort { $0.modificationDate! < $1.modificationDate! }
+                let predicate = NSPredicate(format: "%K == %@", ConversationStrings.senderBRef, selfSenderRef)
                 
-                let convos = records.compactMap { Conversation(conversationRecord: $0) }
-                return completion(.success(convos))
+                let query = CKQuery(recordType: ConversationStrings.recordType, predicate: predicate)
+                
+                publicDB.perform(query, inZoneWith: nil) { (fetchedRecords, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                            return completion(.failure(.fetchError))
+                        }
+                        
+                        if let fetchedRecords = fetchedRecords {
+                            records.append(contentsOf: fetchedRecords)
+                            
+                            records.sort { $0.modificationDate! < $1.modificationDate! }
+                            
+                            let convos = records.compactMap { Conversation(conversationRecord: $0) }
+                            return completion(.success(convos))
+                        }
+                        
+                        completion(.success([]))
+                    }
+                }
             }
         }
     }

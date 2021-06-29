@@ -18,13 +18,13 @@ struct SenderStrings  {
 class Sender: SenderType {
     let displayName: String
     let ckRecordID: CKRecord.ID
-    let appleID: CKRecord.ID
+    let appleID: CKRecord.Reference
     
     var senderId: String {
         return ckRecordID.recordName
     }
     
-    init(displayName: String, appleID: CKRecord.ID, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
+    init(displayName: String, appleID: CKRecord.Reference, ckRecordID: CKRecord.ID = CKRecord.ID(recordName: UUID().uuidString)) {
         self.displayName = displayName
         self.appleID = appleID
         self.ckRecordID = ckRecordID
@@ -32,7 +32,7 @@ class Sender: SenderType {
     
     convenience init?(senderRecord: CKRecord) {
         guard let displayName = senderRecord[SenderStrings.displayName] as? String,
-              let appleID = senderRecord[SenderStrings.appleID] as? CKRecord.ID else { return nil }
+              let appleID = senderRecord[SenderStrings.appleID] as? CKRecord.Reference else { return nil }
         
         self.init(displayName: displayName, appleID: appleID, ckRecordID: senderRecord.recordID)
     }
