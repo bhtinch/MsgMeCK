@@ -27,6 +27,8 @@ class ConversationViewController: MessagesViewController {
         if conversation != nil {
             fetchConversation()
         }
+        
+        
     }
     
     //  MARK: - METHODS
@@ -100,6 +102,7 @@ class ConversationViewController: MessagesViewController {
             if let otherSender = senders?.first {
                 self.otherSender = otherSender
                 print("\'otherSender\' successfully fetched with id: \(otherSender.ckRecordID.recordName) and displayName: \(otherSender.displayName)")
+                self.title = otherSender.displayName
                 self.fetchMessages()
             } else {
                 print("\'otherSender\' could not be fetched.")
@@ -116,7 +119,7 @@ class ConversationViewController: MessagesViewController {
         CKController.fetchMessagesFor(conversation: conversation) { messages in
             CKController.messages = messages
             
-            CKController.applySendersTo(messages: messages, otherSender: otherSender)
+            CKController.applySendersTo(messages: messages, isAppending: false, otherSender: otherSender)
             self.messagesCollectionView.reloadData()
         }
     }
@@ -133,9 +136,12 @@ extension ConversationViewController: InputBarAccessoryViewDelegate {
             
         } else {
             CKController.sendNewMessageTo(conversation: conversation!, text: text) { message in
-                guard let message = message else { return }
+                guard let message = message,
+                      let otherSender = self.otherSender else { return }
+                
+                CKController.applySendersTo(messages: [message], isAppending: true, otherSender: otherSender)
+                
                 print("successully saved message with id: \(message.ckRecordID.recordName) and text: \(message.messageText)")
-                CKController.messages.append(message)
                 self.messagesCollectionView.reloadData()
                 self.resetInputBar()
             }

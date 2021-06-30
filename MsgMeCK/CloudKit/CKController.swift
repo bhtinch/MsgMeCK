@@ -140,21 +140,6 @@ struct CKController {
         }
     }
     
-    static func applySendersTo(messages: [Message], otherSender: Sender) {
-        guard let selfSender = selfSender,
-              let selfSenderRef = selfSenderRef else { return }
-        
-        messages.forEach { $0.senderObject = selfSender }
-        
-        for message in messages {
-            if message.senderObjectRef != selfSenderRef {
-                message.senderObject = otherSender
-            }
-        }
-        
-        CKController.messages = messages
-    }
-    
     
     //  MARK: - CONVERSATION FUNCTIONS
     static func createNewConversationWith(otherSenderRef: CKRecord.Reference, completion: @escaping(Conversation?) -> Void ) {
@@ -328,25 +313,23 @@ struct CKController {
         }
     }
     
-//    static func fetchSendersFor(messages: [Message]?, completion: @escaping([Message]) -> Void ) {
-//        var updatedMessages: [Message] = []
-//        guard let messages = messages else { return completion(updatedMessages) }
-//
-//        let senderRecordIDs = messages.compactMap { $0.senderObjectRef.recordID }
-//
-//        fetchSendersByRecordIdOrAppleId(appleID: nil, recordIDs: senderRecordIDs) { senders in
-//            guard let fetchedSenders = senders else { return completion(updatedMessages) }
-//
-//            for i in 0..<messages.count {
-//                let message = messages[i]
-//                let senderObject = fetchedSenders[i]
-//
-//                message.senderObject = senderObject
-//                updatedMessages.append(message)
-//            }
-//
-//            completion(updatedMessages)
-//        }
-//    }
-    
+    static func applySendersTo(messages: [Message], isAppending: Bool, otherSender: Sender) {
+        guard let selfSender = selfSender,
+              let selfSenderRef = selfSenderRef else { return }
+        
+        messages.forEach { $0.senderObject = selfSender }
+        
+        for message in messages {
+            if message.senderObjectRef != selfSenderRef {
+                message.senderObject = otherSender
+            }
+        }
+        
+        if isAppending {
+            CKController.messages.append(contentsOf: messages)
+        } else {
+            CKController.messages = messages
+        }
+    }
+        
 }   //  End of Struct

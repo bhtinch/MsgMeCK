@@ -13,14 +13,15 @@ class ConversationsListTableViewController: UITableViewController {
     //  MARK: - OUTLETS
     @IBOutlet weak var addBarButton: UIBarButtonItem!
     
+    //  MARK: - PROPERTIES
+    var otherSenders: [Sender]?
+    
     //  MARK: - LIFECYCLES
     override func viewDidLoad() {
         super.viewDidLoad()
         addBarButton.isEnabled = false
         fetchAppleID()
     }
-    
-    //  MARK: - ACTIONS
     
     //  MARK: - METHODS
     func fetchAppleID() {
@@ -96,10 +97,30 @@ class ConversationsListTableViewController: UITableViewController {
             switch result {
             case .success(let convos):
                 CKController.conversations = convos
-                self.tableView.reloadData()
+                self.fetchOtherSenders()
             case .failure(let error):
                 print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    func fetchOtherSenders() {
+        let recordIDs: [CKRecord.ID] = CKController.conversations.compactMap {
+            var recordID = $0.senderARef.recordID
+            
+            if recordID == CKController.selfSenderRef?.recordID {
+                recordID = $0.senderBRef.recordID
+            }
+            
+            return recordID
+        }
+        
+        CKController.fetchSendersByRecordIdOrAppleId(appleID: nil, recordIDs: recordIDs) { senders in
+            guard let senders = senders,
+                  senders.count == CKController.conversations.count else { return }
+            
+            self.otherSenders = senders
+            self.tableView.reloadData()
         }
     }
     
@@ -111,19 +132,12 @@ class ConversationsListTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
-        let conversation = CKController.conversations[indexPath.row]
+        let otherSender = otherSenders?[indexPath.row]
         
-        cell.textLabel?.text = conversation.senderB?.displayName ?? "Unknown Sender"
+        cell.textLabel?.text = otherSender?.displayName ?? "Unknown Sender"
 
         return cell
     }
-
-//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//        if editingStyle == .delete {
-//            // Delete the row from the data source
-//            tableView.deleteRows(at: [indexPath], with: .fade)
-//        }
-//    }
 
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
