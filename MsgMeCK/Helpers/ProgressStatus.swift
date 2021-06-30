@@ -14,7 +14,7 @@ import Foundation
  - basic creating/fetching conversations, senders, and messages working
  
  
- BUGS
+ BUGS:
  -  New users working once completing create displayName?
  
  
