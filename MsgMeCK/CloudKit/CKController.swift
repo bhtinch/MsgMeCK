@@ -157,7 +157,9 @@ struct CKController {
                 
                 guard let record = record else { return completion(nil) }
                 
-                let conversation = Conversation(conversationRecord: record)
+                if let conversation = Conversation(conversationRecord: record) {
+                    self.subscribeToNewMessagesTo(conversation: conversation)
+                }
                 
                 completion(conversation)
             }
@@ -263,11 +265,39 @@ struct CKController {
         }
     }
     
+    static func subscribeToNewMessagesTo(conversation: Conversation) {
+        
+        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .deleteSelf)
+        
+        let predicate = NSPredicate(format: "%K == %@", MessageStrings.conversationRef, conversationRef)
+        
+        let querySub = CKQuerySubscription(recordType: MessageStrings.recordType, predicate: predicate, subscriptionID: conversation.ckRecordID.recordName, options: CKQuerySubscription.Options.firesOnRecordCreation)
+        
+        let notificationinfo = CKSubscription.NotificationInfo()
+        notificationinfo.alertBody = "YAYAY, new message."
+        notificationinfo.shouldBadge = true
+        notificationinfo.soundName = "default"
+        
+        querySub.notificationInfo = notificationinfo
+        
+        publicDB.save(querySub) { subscription, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let sub = subscription else { return }
+                print("\nsubcription successfully added with id: \(sub.subscriptionID)\n")
+            }
+        }
+    }
+    
     //  MARK: - MESSAGE FUNCTIONS
     static func sendNewMessageTo(conversation: Conversation, text: String, completion: @escaping(Message?) -> Void) {
         guard let selfSenderRef = CKController.selfSenderRef else { return completion(nil) }
         
-        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .none)
+        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .deleteSelf)
         
         let message = Message(messageText: text, senderObjectRef: selfSenderRef)
         
@@ -295,7 +325,7 @@ struct CKController {
         let predicate = NSPredicate(format: "%K == %@", MessageStrings.conversationRef, conversationRef)
         
         let query = CKQuery(recordType: MessageStrings.recordType, predicate: predicate)
-        
+                
         publicDB.perform(query, inZoneWith: nil) { (records, error) in
             DispatchQueue.main.async {
                 if let error = error {

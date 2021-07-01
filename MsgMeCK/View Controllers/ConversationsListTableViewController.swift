@@ -20,10 +20,25 @@ class ConversationsListTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         addBarButton.isEnabled = false
+        configureRefreshControl()
         fetchAppleID()
     }
     
     //  MARK: - METHODS
+    func configureRefreshControl () {
+        self.refreshControl = UIRefreshControl()
+        self.refreshControl?.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+    }
+    
+    @objc func handleRefreshControl() {
+        self.fetchConversations()
+        
+        // Dismiss the refresh control.
+        DispatchQueue.main.async {
+            self.refreshControl?.endRefreshing()
+        }
+    }
+    
     func fetchAppleID() {
         // fetch icloud appleID
         CKController.fetchCurrentAppleUser { record in

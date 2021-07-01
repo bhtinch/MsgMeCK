@@ -16,6 +16,8 @@ import Foundation
  
  BUGS:
  -  New users working once completing create displayName?
+ -  first message not updating messageKit view upon sending
+ -  as far as I can tell notifications are not firing from conversationRef subscriptions.
  
  
  TO DO:

@@ -130,11 +130,11 @@
 		62922CD1267A985F00F9EB30 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				62627E8A268CED2A0031B292 /* ProgressStatus.swift */,
 				62922CD2267A987300F9EB30 /* ConversationError.swift */,
 				62922CD4267A988700F9EB30 /* DateFormatter.swift */,
 				6212E9402684E2D700DDCE31 /* Alerts.swift */,
 				6212E9422684E83D00DDCE31 /* CKError.swift */,
-				62627E8A268CED2A0031B292 /* ProgressStatus.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";

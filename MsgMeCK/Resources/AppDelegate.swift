@@ -12,7 +12,19 @@ import CloudKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (success, error) in
+            
+            if let error = error {
+                print("There was an error in \(#function) ; \(error)  ; \(error.localizedDescription)")
+                return
+            }
+            success ? print("Successfully authorized to send push notfiication") : print("DENIED, Can't send this person notificiation")
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+        
         return true
     }
 
