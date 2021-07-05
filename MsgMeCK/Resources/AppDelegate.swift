@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             success ? print("Successfully authorized to send push notfiication") : print("DENIED, Can't send this person notificiation")
             DispatchQueue.main.async {
-                UIApplication.shared.registerForRemoteNotifications()
+                application.registerForRemoteNotifications()
             }
         }
         
@@ -40,6 +40,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+    }
+    
+    //  MARK: - NOTIFICAITONS
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        print("\n***\(#function) fired this statement.***\nLooks like the application successfully registered for notificaitons.\n")
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("\n***\(#function) fired this statement.***\nLooks like the application failed to register for notificaitons.\nError: \(error.localizedDescription)")
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        print("\n***\(#function) fired this statement.***\n")
     }
 }
 

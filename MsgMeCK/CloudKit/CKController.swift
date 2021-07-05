@@ -276,6 +276,7 @@ struct CKController {
         let notificationinfo = CKSubscription.NotificationInfo()
         notificationinfo.alertBody = "YAYAY, new message."
         notificationinfo.shouldBadge = true
+        notificationinfo.shouldSendContentAvailable = true
         notificationinfo.soundName = "default"
         
         querySub.notificationInfo = notificationinfo
