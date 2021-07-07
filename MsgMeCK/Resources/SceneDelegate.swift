@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CloudKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -27,6 +28,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        
+        let badgeResetOperation = CKModifyBadgeOperation(badgeValue: 0)
+        badgeResetOperation.modifyBadgeCompletionBlock = { (error) -> Void in
+            DispatchQueue.main.async {
+                if error != nil {
+                    print("Error resetting badge: \(error!.localizedDescription)")
+                }
+                else {
+                    UIApplication.shared.applicationIconBadgeNumber = 0
+                }
+            }
+        }
+        CKContainer.default().add(badgeResetOperation)
+        
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
     }

@@ -16,22 +16,20 @@ class ConversationViewController: MessagesViewController {
     var otherSenderRef: CKRecord.Reference?
     var otherSender: Sender?
     var conversation: Conversation?
-    //var messageText: String?
     
     //  MARK: - LIFECYLES
     override func viewDidLoad() {
         super.viewDidLoad()
         configureMessageCollectionView()
         configureMessageInputBar()
+        setObserver()
         
-        if conversation != nil {
-            fetchConversation()
-        }
+        self.title = otherSender?.displayName
         
-        
+        fetchConversation()
     }
     
-    //  MARK: - METHODS
+    //  MARK: - SETUP METHODS
     func configureMessageCollectionView() {
         
         messagesCollectionView.messagesDataSource = self
@@ -54,30 +52,33 @@ class ConversationViewController: MessagesViewController {
             for: .highlighted
         )
 
-//        let camera = makeButton(named: "ic_camera")
-//        camera.tintColor = .darkGray
-//        camera.onTouchUpInside { (item) in
-//            print("camera tapped.")
-//            self.presentImageAlert()
-//        }
-
         messageInputBar.setLeftStackViewWidthConstant(to: 35, animated: true)
-        //messageInputBar.setStackViewItems([camera], forStack: .left, animated: false)
-        //attachmentManager.delegate = messageInputBar
-        //messageInputBar.inputPlugins = [attachmentManager]
 
         self.messageInputBar = messageInputBar
     }
     
+    func setObserver() {
+        print("setting message observer...")
+        
+        CKController.setNewMessageObserver(observeObject: ObserveObjects.shared) { _ in
+            self.fetchMessages()
+        }
+    }
+    
+    //  MARK: - NEW CONVERSATION METHODS
     func createNewConversation() {
         guard let otherSenderRef = otherSenderRef else { return }
         CKController.createNewConversationWith(otherSenderRef: otherSenderRef) { conversation in
             guard let conversation = conversation else { return }
             self.conversation = conversation
+            CKController.conversations.append(conversation)
+            
+            CKController.subscribeToNewMessagesTo(conversation: conversation)
             self.messageInputBar.didSelectSendButton()
         }
     }
     
+    //  MARK: - EXISTING CONVERSATION METHODS
     func fetchConversation() {
         guard let otherSenderRef = otherSenderRef,
               let selfSenderRef = CKController.selfSenderRef else { return }
@@ -86,8 +87,11 @@ class ConversationViewController: MessagesViewController {
             switch result {
             case .success(let conversation):
                 if let conversation = conversation {
+                    print("\nSuccessfully fetched conversation with ID: \(conversation.ckRecordID.recordName)\n")
                     self.conversation = conversation
-                    self.fetchOtherSender()
+                    self.fetchMessages()
+                } else {
+                    CKController.messages = []
                 }
             case .failure(let error):
                 print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
@@ -95,23 +99,6 @@ class ConversationViewController: MessagesViewController {
         }
     }
     
-    func fetchOtherSender() {
-        guard let otherSenderRef = otherSenderRef else { return }
-        
-        CKController.fetchSendersByRecordIdOrAppleId(appleID: nil, recordIDs: [otherSenderRef.recordID]) { senders in
-            if let otherSender = senders?.first {
-                self.otherSender = otherSender
-                print("\'otherSender\' successfully fetched with id: \(otherSender.ckRecordID.recordName) and displayName: \(otherSender.displayName)")
-                self.title = otherSender.displayName
-                self.fetchMessages()
-            } else {
-                print("\'otherSender\' could not be fetched.")
-            }
-        }
-    }
-    
-    
-    //  BenTin - DOES THIS NEED TO BE A LISTENER AND NOT JUST A FETCH???
     func fetchMessages() {
         guard let conversation = conversation,
               let otherSender = otherSender else { return }
@@ -121,9 +108,10 @@ class ConversationViewController: MessagesViewController {
             
             CKController.applySendersTo(messages: messages, isAppending: false, otherSender: otherSender)
             self.messagesCollectionView.reloadData()
+            self.messagesCollectionView.scrollToLastItem(animated: true)
+
         }
     }
-    
 }   //  End of Class
 
 //  MARK: - MESSAGEKIT INPUT BAR DELEGATE
@@ -132,7 +120,6 @@ extension ConversationViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         if conversation == nil {
             self.createNewConversation()
-            return
             
         } else {
             CKController.sendNewMessageTo(conversation: conversation!, text: text) { message in
@@ -198,4 +185,4 @@ extension ConversationViewController: MessageCellDelegate, MessagesLayoutDelegat
         let avatar = Avatar(image: nil, initials: initials.description)
         avatarView.set(avatar: avatar)
     }
-}
+}   //  End of Extension

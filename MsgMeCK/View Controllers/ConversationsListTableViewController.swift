@@ -21,13 +21,22 @@ class ConversationsListTableViewController: UITableViewController {
         super.viewDidLoad()
         addBarButton.isEnabled = false
         configureRefreshControl()
+        subscribeToNewConversations()
+        setObserver()
+        
         fetchAppleID()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        tableView.reloadData()
     }
     
     //  MARK: - METHODS
     func configureRefreshControl () {
         self.refreshControl = UIRefreshControl()
         self.refreshControl?.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+        
     }
     
     @objc func handleRefreshControl() {
@@ -36,6 +45,18 @@ class ConversationsListTableViewController: UITableViewController {
         // Dismiss the refresh control.
         DispatchQueue.main.async {
             self.refreshControl?.endRefreshing()
+        }
+    }
+    
+    func subscribeToNewConversations() {
+        CKController.subscribeToNewConvesations()
+    }
+    
+    func setObserver() {
+        print("observer set")
+        
+        CKController.setNewConversationObserver(observeObject: ObserveObjects.shared) { _ in
+            self.handleRefreshControl()
         }
     }
     
@@ -158,18 +179,13 @@ class ConversationsListTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toConversationVC" {
             guard let indexPath = tableView.indexPathForSelectedRow,
-                  let destination = segue.destination as? ConversationViewController else { return }
+                  let destination = segue.destination as? ConversationViewController,
+                  let otherSender = otherSenders?[indexPath.row] else { return }
             
             let conversation = CKController.conversations[indexPath.row]
             destination.conversation = conversation
-            
-            var otherSenderRef = CKController.conversations[indexPath.row].senderBRef
-            
-            if otherSenderRef.recordID == CKController.selfSender?.ckRecordID {
-                otherSenderRef = CKController.conversations[indexPath.row].senderARef
-            }
-            
-            destination.otherSenderRef = otherSenderRef
+            destination.otherSender = otherSender
+            destination.otherSenderRef = CKRecord.Reference(recordID: otherSender.ckRecordID, action: .none)
         }
     }
 }   //  End of Class

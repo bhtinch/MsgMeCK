@@ -9,7 +9,7 @@ import Foundation
 import CloudKit
 import MessageKit
 
-struct CKController {
+class CKController: NSObject {
     static let privateDB = CKContainer.default().privateCloudDatabase
     static let publicDB = CKContainer.default().publicCloudDatabase
     
@@ -25,6 +25,8 @@ struct CKController {
         }
     }
     static var selfSenderRef: CKRecord.Reference?
+    
+    static var kvoToken: NSKeyValueObservation?
     
     //  MARK: - USER FUNCTIONS
     static func fetchCurrentAppleUser(completion: @escaping (CKRecord?) -> Void) {
@@ -265,34 +267,6 @@ struct CKController {
         }
     }
     
-    static func subscribeToNewMessagesTo(conversation: Conversation) {
-        
-        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .deleteSelf)
-        
-        let predicate = NSPredicate(format: "%K == %@", MessageStrings.conversationRef, conversationRef)
-        
-        let querySub = CKQuerySubscription(recordType: MessageStrings.recordType, predicate: predicate, subscriptionID: conversation.ckRecordID.recordName, options: CKQuerySubscription.Options.firesOnRecordCreation)
-        
-        let notificationinfo = CKSubscription.NotificationInfo()
-        notificationinfo.alertBody = "YAYAY, new message."
-        notificationinfo.shouldBadge = true
-        notificationinfo.shouldSendContentAvailable = true
-        notificationinfo.soundName = "default"
-        
-        querySub.notificationInfo = notificationinfo
-        
-        publicDB.save(querySub) { subscription, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let sub = subscription else { return }
-                print("\nsubcription successfully added with id: \(sub.subscriptionID)\n")
-            }
-        }
-    }
     
     //  MARK: - MESSAGE FUNCTIONS
     static func sendNewMessageTo(conversation: Conversation, text: String, completion: @escaping(Message?) -> Void) {
@@ -360,6 +334,82 @@ struct CKController {
             CKController.messages.append(contentsOf: messages)
         } else {
             CKController.messages = messages
+        }
+    }
+    
+    //  MARK: - SUBSCRIPTIONS
+    static func subscribeToNewConvesations() {
+        let predicate = NSPredicate(value: true)
+        
+        let querySub = CKQuerySubscription(recordType: ConversationStrings.recordType, predicate: predicate, subscriptionID: "newConversations", options: CKQuerySubscription.Options.firesOnRecordCreation)
+        
+        let notificationinfo = CKSubscription.NotificationInfo()
+        notificationinfo.title = "New Conversation"
+        notificationinfo.alertBody = "A new conversation has started."
+        notificationinfo.shouldBadge = true
+        notificationinfo.shouldSendContentAvailable = true
+        notificationinfo.soundName = "default"
+        
+        querySub.notificationInfo = notificationinfo
+        
+        publicDB.save(querySub) { subscription, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let sub = subscription else { return }
+                print("\nsubcription successfully added with id: \(sub.subscriptionID)\n")
+            }
+        }
+    }
+    
+    static func subscribeToNewMessagesTo(conversation: Conversation) {
+        
+        let conversationRef = CKRecord.Reference(recordID: conversation.ckRecordID, action: .deleteSelf)
+        
+        let predicate = NSPredicate(format: "%K == %@", MessageStrings.conversationRef, conversationRef)
+        //let predicate = NSPredicate(value: true)
+        
+        let querySub = CKQuerySubscription(recordType: MessageStrings.recordType, predicate: predicate, subscriptionID: conversation.ckRecordID.recordName, options: CKQuerySubscription.Options.firesOnRecordCreation)
+        
+        let notificationinfo = CKSubscription.NotificationInfo()
+        notificationinfo.title = "New Message"
+        notificationinfo.alertBody = "A new message has arrived."
+        notificationinfo.shouldBadge = true
+        notificationinfo.shouldSendContentAvailable = true
+        notificationinfo.soundName = "default"
+        
+        querySub.notificationInfo = notificationinfo
+        
+        publicDB.save(querySub) { subscription, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("***Error*** in Function: \(#function)\n\nError: \(error)\n\nDescription: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let sub = subscription else { return }
+                print("\nsubcription successfully added with id: \(sub.subscriptionID)\n")
+            }
+        }
+    }
+    
+    //  MARK: - OBSERVERS
+    static func setNewConversationObserver(observeObject: ObserveObjects, completion: @escaping(Bool) -> Void ) {
+        print("conversation observer set2")
+        
+        kvoToken = observeObject.observe(\.newConversation) { object, change in
+            completion(object.newConversation)
+        }
+    }
+    
+    static func setNewMessageObserver(observeObject: ObserveObjects, completion: @escaping(Bool) -> Void ) {
+        print("message observer set2")
+        
+        kvoToken = observeObject.observe(\.newMessage) { object, change in
+            completion(object.newMessage)
         }
     }
         

@@ -11,22 +11,18 @@ import Foundation
 /*
  
  PROGRESS:
- - basic creating/fetching conversations, senders, and messages working
+ - basic creating/fetching conversations, senders, subscriptions and notificaitnos, messages working
  
  
  BUGS:
- -  New users working once completing create displayName?
- -  first message not updating messageKit view upon sending
- -  as far as I can tell notifications are not firing from conversationRef subscriptions.
  
  
  TO DO:
- -  Add listener to fetch convos on convolistVC
- -  Add listener to fetch messages on conversationVC
  -  calculate number of new messages on conversationVC
- -  push notifications on messages
- -  notifications run even when app is closed; update app badge
  
  
+ NOTES:
+ -  In order for subscriptions to save in CK, the subscription save operation must be requested on an actual device (not simulator)
+ -  Also reminder that notifications are not supported in the simulator
  
  */

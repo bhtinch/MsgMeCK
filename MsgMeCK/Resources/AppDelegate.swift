@@ -52,7 +52,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        print("\n***\(#function) fired this statement.***\n")
+        guard let dict = userInfo as? [String : [String: Any]],
+              let apsDict = dict["aps"],
+              let ckDict = dict["ck"],
+              let queryDict = ckDict["qry"] as? [String : Any],
+              let subscriptionID = queryDict["sid"] as? String else { return }
+        
+        print("notification arrived from subscriptionID: \(subscriptionID)\n")
+        print("apsDict is below.\n\(apsDict)")
+        print("ckDict is below.\n\(ckDict)")
+        
+        if subscriptionID == "newConversations" {
+            ObserveObjects.shared.newConversation.toggle()
+        } else {
+            ObserveObjects.shared.newMessage.toggle()
+        }
+        completionHandler(.newData)
     }
+    
 }
 
